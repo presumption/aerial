@@ -1,0 +1,34 @@
+# Build
+*.class
+build/
+dist
+.gradle
+node_modules
+.parcel-cache
+
+# Log file
+*.log
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs
+hs_err_pid*
+
+# Idea
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Mac OS
+.DS_Store
+
+# Elm
+elm-stuff

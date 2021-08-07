@@ -1,0 +1,43 @@
+@import "vars";
+
+.page-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  .page-title {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+
+    @theme-switcher-size: 1.6em;
+
+    .breadcrumbs {
+      font-size: @font-size-title;
+      text-align: center;
+      flex-grow: 1;
+      padding-left: @theme-switcher-size;
+
+      a {
+        color: var(--color-accent-contrast-tinted);
+
+        &:hover {
+          color: var(--color-accent-contrast);
+        }
+      }
+    }
+
+    .theme-switcher {
+      width: @theme-switcher-size;
+      height: @theme-switcher-size;
+      border-radius: @theme-switcher-size;
+      background-color: var(--color-accent-contrast);
+      mask: no-repeat center center/@theme-switcher-size url("theme-switcher-icon.svg");
+
+      &:hover {
+        background-color: var(--color-accent-contrast-tinted);
+        cursor: pointer;
+      }
+    }
+  }
+}

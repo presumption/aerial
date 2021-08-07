@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "@parcel/transformer-elm": "^2.5.0",
+    "@parcel/transformer-inline-string": "^2.5.0",
+    "@parcel/transformer-less": "^2.5.0",
+    "elm": "^0.19.1-5"
+  },
+  "dependencies": {
+    "parcel": "^2.5.0"
+  }
+}
