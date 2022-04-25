@@ -81,11 +81,19 @@
       .how-to-badge {
         .badge();
         background-color: var(--color-accent);
+        color: var(--color-accent-contrast);
+      }
+
+      .todo-badge {
+        .badge();
+        background-color: var(--color-complement);
+        color: var(--color-accent-contrast);
       }
 
       .tag-badge {
         .badge();
-        background-color: var(--color-complement);
+        background-color: var(--color-base-3);
+        color: var(--color-base-contrast);
       }
     }
   }
@@ -93,7 +101,6 @@
 
 .badge() {
   display: inline;
-  color: var(--color-accent-contrast);
   font-size: 11px;
   padding: @space1 @space2;
   border-radius: 2em;

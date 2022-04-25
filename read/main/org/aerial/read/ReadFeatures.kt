@@ -1,8 +1,7 @@
 package org.aerial.read
 
-import org.aerial.read.ExampleType.EXAMPLE
-import org.aerial.read.ExampleType.HOW_TO
 import com.google.gson.GsonBuilder
+import org.aerial.read.ExampleType.*
 import picocli.CommandLine
 import picocli.CommandLine.*
 import java.io.File
@@ -123,7 +122,7 @@ class ReadFeatures : Callable<Int> {
                 setLine(file.absolutePath, result.parsed)
                 content.add(result.parsed)
             } catch (e: Throwable) {
-                content.errors.add("File $file at line $i: ${e.message}")
+                content.errors.add("File $file at line $cur: ${e.message}")
             }
         }
         return content
@@ -158,15 +157,14 @@ fun next(lines: List<String>, lineIndex: Int): LineResult {
 }
 
 fun isExample(line: String): Boolean {
-    // aerial:example Booking flights
-    // aerial:how-to Booking flights
-    return containsKeyword(KW_EXAMPLE, line) || containsKeyword(KW_HOW_TO, line)
+    return containsKeyword(KW_EXAMPLE, line) ||
+            containsKeyword(KW_HOW_TO, line) ||
+            containsKeyword(KW_TODO, line)
 }
 
 fun readExample(lines: List<String>, line: Int): LineResult {
     // aerial:example Booking flights
-    // aerial:how-to Booking flights
-    val (useCase, type) = readExampleUseCase(lines[line])
+    val (useCase, type) = readExampleFeature(lines[line])
     var skip = 1
 
     // test "I book a flight for myself and my cat."
@@ -182,7 +180,7 @@ fun readExample(lines: List<String>, line: Int): LineResult {
     // * Business class
     // * Vegetarian menu
     val variables = mutableSetOf<String>()
-    if (containsKeyword(KW_EXAMPLE_VARIABLES, lines[line + skip])) {
+    if (line + skip < lines.size && containsKeyword(KW_EXAMPLE_VARIABLES, lines[line + skip])) {
         skip += 1
         val vars = readList(lines, line + skip)
         variables.addAll(vars)
@@ -191,7 +189,7 @@ fun readExample(lines: List<String>, line: Int): LineResult {
 
     // tags: flights, travel, cat-friendly
     val tags = mutableSetOf<String>()
-    if (containsKeyword(KW_TAGS, lines[line + skip])) {
+    if (line + skip < lines.size && containsKeyword(KW_TAGS, lines[line + skip])) {
         tags.addAll(readInlineListAfterKeyword(KW_TAGS, lines[line + skip]))
         skip += 1
     }
@@ -200,7 +198,7 @@ fun readExample(lines: List<String>, line: Int): LineResult {
         skip,
         Example(
             name = name, feature = useCase, variables = variables, tags = tags,
-            type = type,            file = null, line = line
+            type = type, file = null, line = line
         )
     )
 }
@@ -211,16 +209,23 @@ fun readCrossCut(lines: List<String>, line: Int): LineResult {
     return LineResult(1, Crosscut(name = name, file = null, line = line))
 }
 
-fun readExampleUseCase(text: String): Pair<String, ExampleType> {
-    return if (containsKeyword(KW_HOW_TO, text)) {
-        val useCase = extractAfterKeyword(KW_HOW_TO, text)
-        useCase to HOW_TO
-    } else {
-        try {
-            val useCase = readAfterKeyword(KW_EXAMPLE, text)
-            useCase to EXAMPLE
-        } catch (e: ParsingException) {
-            throw ParsingException("Failed to parse use case name: ${e.message}")
+fun readExampleFeature(text: String): Pair<String, ExampleType> {
+    return when {
+        containsKeyword(KW_HOW_TO, text) -> {
+            val useCase = extractAfterKeyword(KW_HOW_TO, text)
+            useCase to HOW_TO
+        }
+        containsKeyword(KW_TODO, text) -> {
+            val useCase = extractAfterKeyword(KW_TODO, text)
+            useCase to TODO
+        }
+        else -> {
+            try {
+                val useCase = readAfterKeyword(KW_EXAMPLE, text)
+                useCase to EXAMPLE
+            } catch (e: ParsingException) {
+                throw ParsingException("Failed to parse use case name: ${e.message}")
+            }
         }
     }
 }

@@ -2,8 +2,7 @@ package org.aerial.report
 
 import com.google.gson.GsonBuilder
 import org.aerial.lib.fromJson
-import org.aerial.report.ExampleType.EXAMPLE
-import org.aerial.report.ExampleType.HOW_TO
+import org.aerial.report.ExampleType.*
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
@@ -160,9 +159,7 @@ fun mapExample(
 
     val component = findComponent(componentLookup, feature)
 
-    val allTypes =
-        examples.map { example -> if (example.type == org.aerial.read.ExampleType.HOW_TO) HOW_TO else EXAMPLE }
-    val type = if (allTypes.contains(HOW_TO)) HOW_TO else EXAMPLE
+    val type = determineType(examples.map { example -> example.type })
 
     val locations = examples.map { example ->
         val file = example.file
@@ -184,6 +181,22 @@ fun mapExample(
         type = type,
         locations = locations
     )
+}
+
+fun determineType(types: List<org.aerial.read.ExampleType>): ExampleType {
+    val mappedTypes =
+        types.map { type ->
+            when (type) {
+                org.aerial.read.ExampleType.TODO -> TODO
+                org.aerial.read.ExampleType.HOW_TO -> HOW_TO
+                org.aerial.read.ExampleType.EXAMPLE -> EXAMPLE
+            }
+        }
+    return when {
+        mappedTypes.contains(TODO) -> TODO
+        mappedTypes.contains(HOW_TO) -> HOW_TO
+        else -> EXAMPLE
+    }
 }
 
 fun reverseLookup(variables: List<Variable>): Map<String, String> {

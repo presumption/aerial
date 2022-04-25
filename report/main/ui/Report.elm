@@ -40,6 +40,7 @@ type alias Example =
 type ExampleType
     = Normal
     | HowTo
+    | Todo
 
 
 type alias Loc =
@@ -100,11 +101,18 @@ exampleTypeDecoder =
     Decode.string
         |> Decode.andThen
             (\val ->
-                if val |> String.toLower |> String.startsWith "how" then
-                    Decode.succeed HowTo
+                case val |> String.toUpper of
+                    "EXAMPLE" ->
+                        Decode.succeed Normal
 
-                else
-                    Decode.succeed Normal
+                    "HOW_TO" ->
+                        Decode.succeed HowTo
+
+                    "TODO" ->
+                        Decode.succeed Todo
+
+                    _ ->
+                        Decode.fail <| "Could not parse example type: " ++ val
             )
 
 

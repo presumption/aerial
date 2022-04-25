@@ -8,6 +8,7 @@ const val KW_VARIABLE = "aerial:variable"
 
 const val KW_EXAMPLE = "aerial:example"
 const val KW_HOW_TO = "aerial:how-to"
+const val KW_TODO = "aerial:todo"
 const val KW_EXAMPLE_VARIABLES = "variables:"
 
 const val KW_CROSS_CUT = "aerial:cross-cut"

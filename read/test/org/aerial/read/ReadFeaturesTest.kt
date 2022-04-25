@@ -1,8 +1,8 @@
 package org.aerial.read
 
-import org.aerial.read.ExampleType.EXAMPLE
-import org.aerial.read.ExampleType.HOW_TO
+import org.aerial.read.ExampleType.*
 import org.junit.jupiter.api.assertThrows
+import kotlin.TODO
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -63,6 +63,33 @@ class ReadFeaturesTest {
             1 aerial:example Booking flights
             2 test "I book a flight for myself and my cat."
             3 hello world
+        """.trim().split("\n")
+
+        val result = next(text, 1)
+
+        assertEquals(
+            LineResult(
+                skipLines = 2,
+                parsed = Example(
+                    name = "I book a flight for myself and my cat.",
+                    feature = "Booking flights",
+                    variables = setOf(),
+                    tags = setOf(),
+                    type = EXAMPLE,
+                    file = null,
+                    line = 1
+                )
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun `read example at EOF`() {
+        val text = """
+            0 hello world
+            1 aerial:example Booking flights
+            2 test "I book a flight for myself and my cat."
         """.trim().split("\n")
 
         val result = next(text, 1)
@@ -164,6 +191,34 @@ class ReadFeaturesTest {
                     variables = setOf(),
                     tags = setOf(),
                     type = HOW_TO,
+                    file = null,
+                    line = 1
+                )
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun `read todo`() {
+        val text = """
+            0 hello world
+            1 aerial:todo Booking flights
+            2 test "To book a flight, select the number of human and cat passengers."
+            3 hello world
+        """.trim().split("\n")
+
+        val result = next(text, 1)
+
+        assertEquals(
+            LineResult(
+                skipLines = 2,
+                parsed = Example(
+                    name = "To book a flight, select the number of human and cat passengers.",
+                    feature = "Booking flights",
+                    variables = setOf(),
+                    tags = setOf(),
+                    type = TODO,
                     file = null,
                     line = 1
                 )

@@ -123,11 +123,15 @@ viewBadges : Example -> List (Html msg)
 viewBadges example =
     let
         howTo =
-            if example.type_ == HowTo then
-                [ viewHowToBadge ]
+            case example.type_ of
+                Todo ->
+                    [ viewTodoBadge ]
 
-            else
-                []
+                HowTo ->
+                    [ viewHowToBadge ]
+
+                Normal ->
+                    []
 
         tags =
             List.map viewTagBadge example.tags
@@ -137,6 +141,10 @@ viewBadges example =
 
 viewHowToBadge =
     Html.div [ HA.class "how-to-badge" ] [ Html.text "how-to" ]
+
+
+viewTodoBadge =
+    Html.div [ HA.class "todo-badge" ] [ Html.text "todo" ]
 
 
 viewTagBadge tag =

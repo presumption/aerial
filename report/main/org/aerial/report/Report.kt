@@ -31,7 +31,7 @@ data class Example(
 )
 
 enum class ExampleType {
-    EXAMPLE, HOW_TO
+    EXAMPLE, HOW_TO, TODO
 }
 
 data class Loc(val file: String, val line: Int)

@@ -1,6 +1,8 @@
 package org.aerial.report
 
 import org.aerial.report.ExampleType.HOW_TO
+import org.aerial.report.ExampleType.TODO
+import org.aerial.report.ExampleType.EXAMPLE
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -86,8 +88,45 @@ class GenerateReportTest {
             examples = examples, errors = errors
         )
         assertEquals(expected, result)
-        assertEquals(errors.size, 0)
+        assertEquals(0, errors.size)
     }
+
+    @Test
+    fun `TODO type takes precedence`() {
+        val result = determineType(
+            listOf(
+                org.aerial.read.ExampleType.TODO,
+                org.aerial.read.ExampleType.HOW_TO,
+                org.aerial.read.ExampleType.EXAMPLE
+            )
+        )
+        assertEquals(TODO, result)
+    }
+
+
+    @Test
+    fun `HOW-TO type takes precedence over EXAMPLE`() {
+        val result = determineType(
+            listOf(
+                org.aerial.read.ExampleType.HOW_TO,
+                org.aerial.read.ExampleType.EXAMPLE
+            )
+        )
+        assertEquals(HOW_TO, result)
+    }
+
+
+    @Test
+    fun `EXAMPLE type is selected if no other types are specified`() {
+        val result = determineType(
+            listOf(
+                org.aerial.read.ExampleType.EXAMPLE,
+                org.aerial.read.ExampleType.EXAMPLE
+            )
+        )
+        assertEquals(EXAMPLE, result)
+    }
+
 
 //    @Test
 //    fun `reconstruct variable keys`() {
