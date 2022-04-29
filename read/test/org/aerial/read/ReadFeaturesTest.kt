@@ -51,7 +51,7 @@ class ReadFeaturesTest {
                     tags = setOf("pet-friendly", "travel"),
                     type = EXAMPLE,
                     file = null,
-                    line = 1
+                    line = 2
                 )
             ),
             result
@@ -79,7 +79,7 @@ class ReadFeaturesTest {
                     tags = setOf(),
                     type = EXAMPLE,
                     file = null,
-                    line = 1
+                    line = 2
                 )
             ),
             result
@@ -106,7 +106,7 @@ class ReadFeaturesTest {
                     tags = setOf(),
                     type = EXAMPLE,
                     file = null,
-                    line = 1
+                    line = 2
                 )
             ),
             result
@@ -135,7 +135,7 @@ class ReadFeaturesTest {
                     tags = setOf("pet-friendly", "travel"),
                     type = EXAMPLE,
                     file = null,
-                    line = 1
+                    line = 2
                 )
             ),
             result
@@ -166,7 +166,7 @@ class ReadFeaturesTest {
                     tags = setOf(),
                     type = EXAMPLE,
                     file = null,
-                    line = 1
+                    line = 2
                 )
             ),
             result
@@ -194,7 +194,7 @@ class ReadFeaturesTest {
                     tags = setOf(),
                     type = HOW_TO,
                     file = null,
-                    line = 1
+                    line = 2
                 )
             ),
             result
@@ -222,7 +222,7 @@ class ReadFeaturesTest {
                     tags = setOf(),
                     type = TODO,
                     file = null,
-                    line = 1
+                    line = 2
                 )
             ),
             result
@@ -281,7 +281,7 @@ class ReadFeaturesTest {
                     tags = setOf("flights", "travel", "cat-friendly"),
                     features = setOf("Book a new flight", "Cancel a booked flight"),
                     file = null,
-                    line = 1
+                    line = 2
                 )
             ),
             result
@@ -311,7 +311,7 @@ class ReadFeaturesTest {
                     tags = setOf(),
                     features = setOf("Book a new flight", "Cancel a booked flight"),
                     file = null,
-                    line = 1
+                    line = 2
                 )
             ),
             result
@@ -329,7 +329,10 @@ class ReadFeaturesTest {
         val result = next(text, 1)
 
         assertEquals(
-            LineResult(skipLines = 1, parsed = Crosscut("Undo history", null, line = 1)),
+            LineResult(
+                skipLines = 1,
+                parsed = Crosscut("Undo history", null, line = 2)
+            ),
             result
         )
     }
@@ -356,7 +359,7 @@ class ReadFeaturesTest {
                     name = "Cat colors",
                     values = setOf("Pink", "Black-and-white", "Glittery"),
                     file = null,
-                    line = 2
+                    line = 3
                 )
             ), result
         )

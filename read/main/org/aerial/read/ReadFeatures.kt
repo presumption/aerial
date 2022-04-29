@@ -156,7 +156,7 @@ private fun scanFile(file: File): Content {
         try {
             val result = next(lines, cur)
             i = if (result.skipLines >= 1) (cur + result.skipLines) else (cur + 1)
-            setLine(file.absolutePath, result.parsed)
+            setFilename(file.absolutePath, result.parsed)
             content.add(result.parsed)
         } catch (e: Throwable) {
             content.errors.add("File $file at line $cur: ${e.message}")
@@ -255,15 +255,15 @@ fun isExample(line: String): Boolean {
             containsKeyword(KW_TODO, line)
 }
 
-fun readExample(lines: List<String>, line: Int): LineResult {
+fun readExample(lines: List<String>, lineIndex: Int): LineResult {
     // aerial:example Booking flights
-    val (useCase, type) = readExampleFeature(lines[line])
+    val (useCase, type) = readExampleFeature(lines[lineIndex])
     var skip = 1
 
     // test "I book a flight for myself and my cat."
     val name =
         try {
-            extractWithinQuotes(lines[line + skip])
+            extractWithinQuotes(lines[lineIndex + skip])
         } catch (e: ParsingException) {
             throw ParsingException("Empty example name: ${e.message}")
         }
@@ -273,17 +273,17 @@ fun readExample(lines: List<String>, line: Int): LineResult {
     // * Business class
     // * Vegetarian menu
     val variables = mutableSetOf<String>()
-    if (line + skip < lines.size && containsKeyword(KW_EXAMPLE_VARIABLES, lines[line + skip])) {
+    if (lineIndex + skip < lines.size && containsKeyword(KW_EXAMPLE_VARIABLES, lines[lineIndex + skip])) {
         skip += 1
-        val vars = readList(lines, line + skip)
+        val vars = readList(lines, lineIndex + skip)
         variables.addAll(vars)
         skip += vars.size
     }
 
     // tags: flights, travel, cat-friendly
     val tags = mutableSetOf<String>()
-    if (line + skip < lines.size && containsKeyword(KW_TAGS, lines[line + skip])) {
-        tags.addAll(readInlineListAfterKeyword(KW_TAGS, lines[line + skip]))
+    if (lineIndex + skip < lines.size && containsKeyword(KW_TAGS, lines[lineIndex + skip])) {
+        tags.addAll(readInlineListAfterKeyword(KW_TAGS, lines[lineIndex + skip]))
         skip += 1
     }
 
@@ -291,15 +291,15 @@ fun readExample(lines: List<String>, line: Int): LineResult {
         skip,
         Example(
             name = name, feature = useCase, variables = variables, tags = tags,
-            type = type, file = null, line = line
+            type = type, file = null, line = lineIndex + 1
         )
     )
 }
 
-fun readCrossCut(lines: List<String>, line: Int): LineResult {
+fun readCrossCut(lines: List<String>, lineIndex: Int): LineResult {
     // aerial:cross-cut Undo history
-    val name = readAfterKeyword(KW_CROSS_CUT, lines[line])
-    return LineResult(1, Crosscut(name = name, file = null, line = line))
+    val name = readAfterKeyword(KW_CROSS_CUT, lines[lineIndex])
+    return LineResult(1, Crosscut(name = name, file = null, line = lineIndex + 1))
 }
 
 fun readExampleFeature(text: String): Pair<String, ExampleType> {
@@ -323,28 +323,28 @@ fun readExampleFeature(text: String): Pair<String, ExampleType> {
     }
 }
 
-fun readComponent(lines: List<String>, line: Int): LineResult {
+fun readComponent(lines: List<String>, lineIndex: Int): LineResult {
     // aerial:feature Booking flights
-    val name = readAfterKeyword(KW_COMPONENT, lines[line])
+    val name = readAfterKeyword(KW_COMPONENT, lines[lineIndex])
     var skip = 1
 
     // desc: Want to travel? Book a flight!
-    val desc = readAfterKeyword(KW_COMPONENT_DESC, lines[line + skip])
+    val desc = readAfterKeyword(KW_COMPONENT_DESC, lines[lineIndex + skip])
     skip += 1
 
     // tags: flights, travel, cat-friendly
     val tags = mutableSetOf<String>()
-    if (containsKeyword(KW_TAGS, lines[line + skip])) {
-        tags.addAll(readInlineListAfterKeyword(KW_TAGS, lines[line + skip]))
+    if (containsKeyword(KW_TAGS, lines[lineIndex + skip])) {
+        tags.addAll(readInlineListAfterKeyword(KW_TAGS, lines[lineIndex + skip]))
         skip += 1
     }
 
     // use-cases:
     // * Book a new flight
     // * Cancel a booked flight
-    ensureKeyword(KW_COMPONENT_FEATURES, lines[line + skip])
+    ensureKeyword(KW_COMPONENT_FEATURES, lines[lineIndex + skip])
     skip += 1
-    val useCases = readList(lines, line + skip)
+    val useCases = readList(lines, lineIndex + skip)
     skip += useCases.size
 
     return LineResult(
@@ -356,31 +356,31 @@ fun readComponent(lines: List<String>, line: Int): LineResult {
             tags = tags.toSet(),
             features = useCases.toSet(),
             file = null,
-            line = line
+            line = lineIndex + 1
         )
     )
 }
 
-fun readVariable(lines: List<String>, line: Int): LineResult {
+fun readVariable(lines: List<String>, lineIndex: Int): LineResult {
     // aerial:variable Cat colors
-    val name = readAfterKeyword(KW_VARIABLE, lines[line])
+    val name = readAfterKeyword(KW_VARIABLE, lines[lineIndex])
 
     // * Pink
     // * Black-and-white
     // * Glittery
-    val values = readList(lines, line + 1)
+    val values = readList(lines, lineIndex + 1)
     return LineResult(
         skipLines = 1 + values.size,
         parsed = Variable(
             name = name,
             values = values.toSet(),
             file = null,
-            line = line
+            line = lineIndex + 1
         )
     )
 }
 
-fun setLine(file: String, obj: Any?) {
+fun setFilename(file: String, obj: Any?) {
     when (obj) {
         null -> {}
         is Example -> {

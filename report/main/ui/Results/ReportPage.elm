@@ -88,10 +88,6 @@ viewExampleAsTableItem expanded example =
 
 viewExample : Bool -> Example -> Html Msg
 viewExample expanded ({ example, type_, locations } as e) =
-    let
-        details =
-            viewDetails expanded locations
-    in
     Html.div
         [ HA.class "example" ]
     <|
@@ -101,7 +97,7 @@ viewExample expanded ({ example, type_, locations } as e) =
             ]
             ([ Html.text example ] ++ viewBadges e)
         ]
-            ++ details
+            ++ viewDetails expanded locations
 
 
 viewDetails : Bool -> List Loc -> List (Html msg)
@@ -122,7 +118,7 @@ viewDetails expanded locations =
 viewBadges : Example -> List (Html msg)
 viewBadges example =
     let
-        howTo =
+        exampleTypeBadge =
             case example.type_ of
                 Todo ->
                     [ viewTodoBadge ]
@@ -136,7 +132,7 @@ viewBadges example =
         tags =
             List.map viewTagBadge example.tags
     in
-    howTo ++ tags
+    exampleTypeBadge ++ tags
 
 
 viewHowToBadge =
