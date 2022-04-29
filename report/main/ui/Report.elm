@@ -9,7 +9,8 @@ import Json.Decode as Decode exposing (Decoder)
 
 
 type alias Report =
-    { components : List Component
+    { app : String
+    , components : List Component
     , examples : List Example
     , crosscuts : List Crosscut
     , variables : List Variable
@@ -66,7 +67,8 @@ type alias Variable =
 
 decoder : Decoder Report
 decoder =
-    Decode.map4 Report
+    Decode.map5 Report
+        (Decode.field "app" <| Decode.string)
         (Decode.field "components" <| Decode.list componentDecoder)
         (Decode.field "examples" <| Decode.list exampleDecoder)
         (Decode.field "crosscuts" <| Decode.list crosscutDecoder)

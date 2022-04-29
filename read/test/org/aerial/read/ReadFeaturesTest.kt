@@ -1,10 +1,12 @@
 package org.aerial.read
 
 import org.aerial.read.ExampleType.*
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
-import kotlin.TODO
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class ReadFeaturesTest {
 
@@ -373,5 +375,68 @@ class ReadFeaturesTest {
         assertThrows<ParsingException> {
             next(text, 2)
         }
+    }
+
+    @Test
+    fun `non tests only scanned when explicitly allowed`() {
+        assertAll(
+            { assertTrue(shouldScanFile("file1.py", true)) },
+            { assertFalse(shouldScanFile("file1.py", false)) }
+        )
+    }
+
+    @Test
+    fun `tests always scanned`() {
+        assertAll(
+            { assertTrue(shouldScanFile("test.py", true)) },
+            { assertTrue(shouldScanFile("test.py", false)) }
+        )
+    }
+
+    @Test
+    fun `Aerial-specific files always scanned`() {
+        assertAll(
+            { assertTrue(shouldScanFile("aerial-feature.txt", true)) },
+            { assertTrue(shouldScanFile("aerial-feature.txt", false)) }
+        )
+    }
+
+    @Test
+    fun `exclude files with full name`() {
+        assertTrue(isExcluded("file1", listOf("file1")))
+    }
+
+    @Test
+    fun `exclude files with wildcards`() {
+        assertAll(
+            { assertTrue(isExcluded("my-temp-file", listOf("*temp*"))) },
+            { assertTrue(isExcluded("hs_err_pid_123", listOf("hs_err_pid*"))) },
+            { assertTrue(isExcluded("my.log", listOf("*.log"))) },
+        )
+    }
+
+    @Test
+    fun `clean up exclusions from gitignore`() {
+        assertEquals(
+            listOf(
+                "*temp*",
+                "*.log",
+                "hs_err_pid*",
+                "file1",
+                "folder1",
+                "folder2*",
+            ),
+            cleanUpExclusions(
+                listOf(
+                    "*temp*",
+                    "*.log",
+                    "hs_err_pid*",
+                    "file1 # comment",
+                    "folder1/",
+                    "folder2/*",
+                    "# comment",
+                )
+            )
+        )
     }
 }

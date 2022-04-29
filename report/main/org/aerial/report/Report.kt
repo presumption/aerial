@@ -3,6 +3,7 @@ package org.aerial.report
 // sync report/main/ui/Report.elm
 
 data class Report(
+    val app: String,
     val components: List<Component>,
     val examples: List<Example>,
     val crosscuts: List<Crosscut>,

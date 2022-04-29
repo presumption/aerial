@@ -2,13 +2,24 @@ package org.aerial.lib
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import org.aerial.report.mapComponent
 import java.io.Reader
 
 
 inline fun <reified T> Gson.fromJson(reader: Reader): T =
     fromJson(reader, object : TypeToken<T>() {}.type)
 
+
+inline fun <T, R> Iterable<T>.filtermap(transform: (T) -> R?): List<R> {
+    val result = mutableListOf<R>()
+
+    for (item in this) {
+        val mapped = transform(item)
+        if (mapped != null) {
+            result.add(mapped)
+        }
+    }
+    return result
+}
 
 fun <T> cartesianProduct(lists: List<List<T>>): List<List<T>> {
     if (lists.isEmpty()) {

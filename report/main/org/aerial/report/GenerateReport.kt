@@ -19,10 +19,13 @@ fun main(args: Array<String>): Unit = exitProcess(CommandLine(GenerateReport()).
     description = ["Generates a visual use case report."]
 )
 class GenerateReport : Callable<Int> {
-    @Option(names = ["-d", "--dir"], description = ["Input directory"])
+    @Option(names = ["--app"], description = ["App name. This will be in the title of your report."])
+    lateinit var app: String
+
+    @Option(names = ["-d", "--dir"], description = ["Input directory. Default build/."])
     var input: String = "build/"
 
-    @Option(names = ["-o", "--output"], description = ["Output file"])
+    @Option(names = ["-o", "--output"], description = ["Output file path (JSON). Default build/report.json"])
     var output: String = "build/report.json"
 
     override fun call(): Int {
@@ -83,6 +86,7 @@ class GenerateReport : Callable<Int> {
         }
 
         return Report(
+            app = app,
             components = components,
             examples = examples,
             crosscuts = crosscuts,

@@ -27,7 +27,6 @@ main =
 
 type alias Model =
     { navKey : Navigation.Key
-    , app : String
     , theme : Theme
     , page : Page
     , report : Report
@@ -54,12 +53,11 @@ init flags url key =
                     value
 
                 Err error ->
-                    { components = [], examples = [], crosscuts = [], variables = [] }
+                    { app = "", components = [], examples = [], crosscuts = [], variables = [] }
 
         model : Model
         model =
             { navKey = key
-            , app = "Allude"
             , theme = Light
             , page = OverviewPage
             , report = report
@@ -97,7 +95,7 @@ subscriptions model =
 
 view : Model -> Document Msg
 view model =
-    { title = "Aerial report for " ++ model.app
+    { title = "Aerial report for " ++ model.report.app
     , body =
         [ Html.div
             [ HA.class "app"
@@ -105,12 +103,12 @@ view model =
             ]
             [ case model.page of
                 OverviewPage ->
-                    viewOverviewPage model.app model.report.components
+                    viewOverviewPage model.report.app model.report.components
 
                 ComponentPage name ->
                     case findComponent name model.report.components of
                         Just component ->
-                            viewComponentPage model.app component (examplesForComponent name model.report.examples) model.ui.expanded
+                            viewComponentPage model.report.app component (examplesForComponent name model.report.examples) model.ui.expanded
 
                         Nothing ->
                             viewComponentNotFoundPage name
