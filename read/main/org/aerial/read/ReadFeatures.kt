@@ -261,19 +261,18 @@ fun readExample(lines: List<String>, lineIndex: Int): LineResult {
     var skip = 1
 
     // test "I book a flight for myself and my cat."
-    val name =
-        try {
-            extractWithinQuotes(lines[lineIndex + skip])
-        } catch (e: ParsingException) {
-            throw ParsingException("Empty example name: ${e.message}")
-        }
+    val name = readExampleName(lines[lineIndex + skip])
     skip += 1
 
     // variables:
     // * Business class
     // * Vegetarian menu
     val variables = mutableSetOf<String>()
-    if (lineIndex + skip < lines.size && containsKeyword(KW_EXAMPLE_VARIABLES, lines[lineIndex + skip])) {
+    if (lineIndex + skip < lines.size && containsKeyword(
+            KW_EXAMPLE_VARIABLES,
+            lines[lineIndex + skip]
+        )
+    ) {
         skip += 1
         val vars = readList(lines, lineIndex + skip)
         variables.addAll(vars)
@@ -294,6 +293,15 @@ fun readExample(lines: List<String>, lineIndex: Int): LineResult {
             type = type, file = null, line = lineIndex + 1
         )
     )
+}
+
+fun readExampleName(line: String): String {
+    val name = try {
+        extractWithinQuotes(line.trim())
+    } catch (e: ParsingException) {
+        line
+    }
+    return name.trim().ifEmpty { throw ParsingException("Empty example name") }
 }
 
 fun readCrossCut(lines: List<String>, lineIndex: Int): LineResult {

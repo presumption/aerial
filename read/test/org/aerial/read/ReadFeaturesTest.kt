@@ -442,4 +442,14 @@ class ReadFeaturesTest {
             )
         )
     }
+
+    @Test
+    fun `example name is extracted correctly`() {
+        assertAll(
+            { assertEquals("Hello world", readExampleName("   Hello world    ")) },
+            { assertEquals("Hello world", readExampleName("  \"  Hello world  \"  ")) },
+            { assertEquals("Hello world", readExampleName("aaa   \" Hello world \"   aaa")) },
+            { assertEquals("Hello \"world\"", readExampleName("   \"Hello \"world\"\"")) },
+        )
+    }
 }

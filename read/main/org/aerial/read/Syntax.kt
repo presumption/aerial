@@ -17,7 +17,7 @@ const val KW_TAGS = "tags:"
 const val PREFIX_LIST_ITEM = "\\* "
 const val SEP_INLINE_LIST = ","
 const val ANYTHING = ".*"
-val QUOTES_REGEX = Regex(".*\"(.+)\".*")
+val QUOTES_REGEX = Regex(".*?\"(.+)\".*?")
 
 fun containsKeyword(keyword: String, text: String): Boolean {
     return text.contains(Regex(ANYTHING + keyword + ANYTHING))
