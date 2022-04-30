@@ -230,25 +230,11 @@ class ReadFeaturesTest {
     }
 
     @Test
-    fun `read example fails if no use case is specified`() {
+    fun `read example fails if no feature is specified`() {
         val text = """
             0 hello world
             1 aerial:example 
             2 test "I book a flight for myself and my cat."
-            3 hello world
-        """.trim().split("\n")
-
-        assertThrows<ParsingException> {
-            next(text, 1)
-        }
-    }
-
-    @Test
-    fun `read example fails if no example name is specified`() {
-        val text = """
-            0 hello world
-            1 aerial:example Booking flights
-            2 hello world
             3 hello world
         """.trim().split("\n")
 
@@ -449,7 +435,7 @@ class ReadFeaturesTest {
             { assertEquals("Hello world", readExampleName("   Hello world    ")) },
             { assertEquals("Hello world", readExampleName("  \"  Hello world  \"  ")) },
             { assertEquals("Hello world", readExampleName("aaa   \" Hello world \"   aaa")) },
-            { assertEquals("Hello \"world\"", readExampleName("   \"Hello \"world\"\"")) },
+            { assertEquals("Hello \"world\"", readExampleName("  \"Hello \"world\"\"  ")) },
         )
     }
 }
