@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "org"
-version = "0.1"
+version = "0.2"
 
 repositories {
     mavenCentral()
@@ -28,13 +28,24 @@ tasks.withType<KotlinCompile>() {
 sourceSets {
     main {
         java {
-            setSrcDirs(listOf("lib/main", "read/main", "collate/main", "report/main"))
+            setSrcDirs(listOf("lib/main", "read/main", "report/main", "cli"))
         }
     }
 
     test {
         java {
-            setSrcDirs(listOf("lib/test", "read/test", "collate/test", "report/test"))
+            setSrcDirs(listOf("lib/test", "read/test", "report/test"))
         }
     }
+}
+
+tasks.withType<Jar>() {
+    manifest {
+        attributes(
+            "Main-Class" to "org.aerial.AerialKt"
+        )
+    }
+    from({
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+    })
 }

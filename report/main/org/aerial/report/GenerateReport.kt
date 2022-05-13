@@ -8,28 +8,36 @@ import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 import java.io.File
 import java.util.concurrent.Callable
-import kotlin.system.exitProcess
 
-
-fun main(args: Array<String>): Unit = exitProcess(CommandLine(GenerateReport()).execute(*args))
 
 @Command(
     name = "report",
     mixinStandardHelpOptions = true,
-    description = ["Generates a visual use case report."]
+    description = ["Generates a visual feature report."]
 )
 class GenerateReport : Callable<Int> {
-    @Option(names = ["--app"], description = ["App name. This will be in the title of your report."])
-    lateinit var app: String
+    @Option(
+        names = ["--app"],
+        description = ["App name. This will be in the title of your report."]
+    )
+    var app: String = ""
 
     @Option(names = ["-d", "--dir"], description = ["Input directory. Default build/."])
     var input: String = "build/"
 
-    @Option(names = ["-o", "--output"], description = ["Output file path (JSON). Default build/report.json"])
+    @Option(
+        names = ["-o", "--output"],
+        description = ["Output file path (JSON). Default build/report.json"]
+    )
     var output: String = "build/report.json"
 
     override fun call(): Int {
-        println("Input folder: $input")
+        if (app.isEmpty()) {
+            CommandLine(this).usage(System.out)
+            return 1
+        }
+
+        println("Reading from input folder: $input")
         val inputDir = File(input)
         val componentsFile = inputDir.resolve("components.json")
         val crosscutsFile = inputDir.resolve("crosscuts.json")
@@ -43,14 +51,8 @@ class GenerateReport : Callable<Int> {
         val variables = gson.fromJson<List<org.aerial.read.Variable>>(variablesFile.reader())
 
         val report = collate(components, crosscuts, examples, variables)
+        println("Writing report to: ${output}")
         File(output).writeText(gson.toJson(report))
-
-//        val cfg = Configuration(Configuration.VERSION_2_3_31)
-//        cfg.defaultEncoding = "UTF-8"
-//        cfg.setDirectoryForTemplateLoading(File("src/main/resources"))
-//        val template: Template = cfg.getTemplate("report.ftl")
-//        val out: Writer = File(output).writer()
-//        template.process(report, out)
 
         return 0
     }

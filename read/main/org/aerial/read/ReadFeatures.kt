@@ -7,10 +7,6 @@ import picocli.CommandLine
 import picocli.CommandLine.*
 import java.io.File
 import java.util.concurrent.Callable
-import kotlin.system.exitProcess
-
-fun main(args: Array<String>): Unit =
-    exitProcess(CommandLine(ReadFeatures()).execute(*args))
 
 @Command(
     name = "read",
@@ -22,7 +18,7 @@ class ReadFeatures : Callable<Int> {
         paramLabel = "FILE",
         description = ["Files/folders to scan."]
     )
-    lateinit var filenames: Array<String>
+    var filenames: Array<String> = arrayOf()
 
     @Option(names = ["-o", "--output"], description = ["Output folder. Default build/."])
     var output: String = "build/"
@@ -49,6 +45,11 @@ class ReadFeatures : Callable<Int> {
     var scanAll: Boolean = false
 
     override fun call(): Int {
+        if (filenames.isEmpty()) {
+            CommandLine(this).usage(System.out)
+            return 1
+        }
+
         println("Exclusions: $exclusions")
         val contents = scanFiles(
             readGitIgnore = !doNotReadGitIgnore,
