@@ -5,11 +5,11 @@ import Html.Attributes as HA
 import Theme
 
 
-viewHeader breadcrumbs headerContent =
+view breadcrumbs =
     Html.div [ HA.class "page-header" ] <|
         [ Html.div [ HA.class "page-title" ]
             [ Html.div [ HA.class "breadcrumbs" ] breadcrumbs
             , Theme.viewSwitcher
             ]
         ]
-            ++ headerContent
+            ++ [ Html.div [ HA.class "filters" ] [ Html.text "Filters" ] ]

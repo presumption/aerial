@@ -1,50 +1,47 @@
 module Aerial exposing (main)
 
 import Browser exposing (Document, UrlRequest(..))
-import Browser.Navigation as Navigation
+import Filters exposing (Filter(..), Filters)
 import Html exposing (Html)
 import Html.Attributes as HA
 import Json.Decode as Decode
-import OverviewPage exposing (viewOverviewPage)
+import OverviewPage exposing (Msg(..), viewComponent)
 import Report exposing (..)
-import Results.ReportPage exposing (viewComponentNotFoundPage, viewComponentPage)
-import Theme exposing (Theme(..))
-import UI exposing (..)
-import Url exposing (Url)
+import ResultsPage exposing (Msg(..), viewComponentNotFoundPage)
+import Set exposing (Set)
+import Theme exposing (Msg(..), Theme(..))
 
 
 main : Program Flags Model Msg
 main =
-    Browser.application
+    Browser.element
         { init = init
         , view = view
         , update = update
         , subscriptions = subscriptions
-        , onUrlChange = ChangedUrl
-        , onUrlRequest = ClickedLink
         }
 
 
 type alias Model =
-    { navKey : Navigation.Key
-    , theme : Theme
-    , page : Page
+    { theme : Theme
     , report : Report
+    , filters : Filters
     , ui : UI
     }
 
 
-type Page
-    = OverviewPage
-    | ComponentPage String
+type Msg
+    = ThemeMsg Theme.Msg
+    | OverviewPageMsg OverviewPage.Msg
+    | ResultsPageMsg ResultsPage.Msg
 
 
 type alias Flags =
     { report : Decode.Value }
 
 
-init : Flags -> Url -> Navigation.Key -> ( Model, Cmd Msg )
-init flags url key =
+init : Flags -> ( Model, Cmd Msg )
+init flags =
     let
         report : Report
         report =
@@ -57,35 +54,26 @@ init flags url key =
 
         model : Model
         model =
-            { navKey = key
-            , theme = Light
-            , page = OverviewPage
+            { theme = Light
             , report = report
+            , filters = Filters.empty
             , ui = initUI
             }
     in
-    ( changedUrl url model, Cmd.none )
+    ( model, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({ navKey } as model) =
-    case msg of
-        ChangedUrl url ->
-            ( changedUrl url model, Cmd.none )
-
-        ClickedLink urlRequest ->
-            case urlRequest of
-                Internal url ->
-                    ( model, clickedLink url navKey )
-
-                External string ->
-                    ( model, Cmd.none )
-
-        ToggleExample example ->
+update msg model =
+    case Debug.log "msg" msg of
+        ResultsPageMsg (ToggleExampleExpanded example) ->
             ( { model | ui = toggleExample example model.ui }, Cmd.none )
 
-        ToggleTheme ->
+        ThemeMsg ToggleTheme ->
             ( { model | theme = Theme.toggleTheme model.theme }, Cmd.none )
+
+        OverviewPageMsg (FilterBy (ComponentNameEquals name)) ->
+            ( { model | filters = Filters.filterBy name model.filters }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -93,28 +81,24 @@ subscriptions model =
     Sub.none
 
 
-view : Model -> Document Msg
+view : Model -> Html Msg
 view model =
-    { title = "Aerial report for " ++ model.report.app
-    , body =
-        [ Html.div
-            [ HA.class "app"
-            , Theme.class model.theme
-            ]
-            [ case model.page of
-                OverviewPage ->
-                    viewOverviewPage model.report.app model.report.components
-
-                ComponentPage name ->
-                    case findComponent name model.report.components of
-                        Just component ->
-                            viewComponentPage model.report.app component (examplesForComponent name model.report.examples) model.ui.expanded
-
-                        Nothing ->
-                            viewComponentNotFoundPage name
-            ]
+    Html.div
+        [ HA.class "app"
+        , Theme.class model.theme
         ]
-    }
+        [ case List.head model.filters of
+            Just (ComponentNameEquals name) ->
+                case findComponent name model.report.components of
+                    Just component ->
+                        viewComponentPage model.report.app component (examplesForComponent name model.report.examples) model.ui.expanded
+
+                    Nothing ->
+                        viewComponentNotFoundPage name
+
+            _ ->
+                viewOverviewPage model.report.app model.report.components
+        ]
 
 
 findComponent : String -> List Component -> Maybe Component
@@ -127,25 +111,44 @@ examplesForComponent component examples =
     List.filter (.component >> (==) component) examples
 
 
-changedUrl : Url -> Model -> Model
-changedUrl url ({ navKey } as model) =
-    if "/" == url.path then
-        { model | page = OverviewPage }
-
-    else if String.startsWith "/component/" url.path then
-        { model | page = ComponentPage (String.replace "/component/" "" url.path) }
-
-    else
-        model
+type alias UI =
+    { expanded : Set String
+    }
 
 
-clickedLink : Url -> Navigation.Key -> Cmd Msg
-clickedLink url navKey =
-    if "/" == url.path then
-        Navigation.pushUrl navKey "/"
+initUI : UI
+initUI =
+    { expanded = Set.empty
+    }
 
-    else if String.startsWith "/component/" url.path then
-        Navigation.pushUrl navKey url.path
+
+toggleExample : String -> UI -> UI
+toggleExample example ui =
+    if Set.member example ui.expanded then
+        { ui | expanded = Set.remove example ui.expanded }
 
     else
-        Cmd.none
+        { ui | expanded = Set.insert example ui.expanded }
+
+
+viewOverviewPage : String -> List Component -> Html Msg
+viewOverviewPage app components =
+    Html.div
+        [ HA.class "overview-page" ]
+    <|
+        [ OverviewPage.viewHeader app
+            |> Html.map ThemeMsg
+        , Html.div [ HA.class "components" ] (List.map viewComponent components)
+            |> Html.map OverviewPageMsg
+        ]
+
+
+viewComponentPage : String -> Component -> List Example -> Set String -> Html Msg
+viewComponentPage app component examples expanded =
+    Html.div
+        [ HA.class "component-page" ]
+        [ ResultsPage.viewHeader app component.component
+            |> Html.map ThemeMsg
+        , Html.div [ HA.class "features" ] (List.map (ResultsPage.viewFeature examples expanded) component.features)
+            |> Html.map ResultsPageMsg
+        ]

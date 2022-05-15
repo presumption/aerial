@@ -3,12 +3,15 @@ module Theme exposing (..)
 import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Events
-import UI exposing (Msg(..))
 
 
 type Theme
     = Light
     | Dark
+
+
+type Msg
+    = ToggleTheme
 
 
 viewSwitcher : Html Msg

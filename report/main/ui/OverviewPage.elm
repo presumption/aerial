@@ -1,37 +1,30 @@
-module OverviewPage exposing (viewOverviewPage)
+module OverviewPage exposing (..)
 
-import Header exposing (viewHeader)
+import Filters exposing (Filter(..))
+import Header exposing (view)
 import Html exposing (Html)
 import Html.Attributes as HA
+import Html.Events
 import Report exposing (..)
-import UI exposing (Msg)
 
 
-viewOverviewPage : String -> List Component -> Html Msg
-viewOverviewPage app components =
-    Html.div
-        [ HA.class "overview-page" ]
-    <|
-        [ viewSimpleHeader app
-        , Html.div [ HA.class "components" ] (List.map viewComponent components)
-        ]
+type Msg
+    = FilterBy Filter
 
 
-viewSimpleHeader app =
-    viewHeader
-        [ Html.text app ]
-        []
+viewHeader app =
+    Header.view [ Html.a [ HA.href "/" ] [ Html.text app ] ]
 
 
-viewComponent : Component -> Html msg
-viewComponent component =
-    if List.isEmpty component.features then
+viewComponent : Component -> Html Msg
+viewComponent { component, features } =
+    if List.isEmpty features then
         Html.div
             [ HA.class "component-empty" ]
         <|
             [ Html.div
                 [ HA.class "component-name" ]
-                [ Html.text component.component ]
+                [ Html.text component ]
             , Html.div
                 [ HA.class "component-features" ]
                 [ Html.text "No features found!" ]
@@ -41,14 +34,15 @@ viewComponent component =
         Html.div
             [ HA.class "component" ]
         <|
-            [ Html.a
+            [ Html.button
                 [ HA.class "component-name"
-                , HA.href <| "/component/" ++ component.component
+                , Html.Events.onClick (FilterBy <| ComponentNameEquals component)
+                , HA.href <| "/component/" ++ component
                 ]
-                [ Html.text component.component ]
+                [ Html.text component ]
             , Html.div
                 [ HA.class "component-features" ]
-                (List.map (viewFeature component.component) component.features)
+                (List.map (viewFeature component) features)
             ]
 
 

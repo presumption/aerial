@@ -1,31 +1,24 @@
-module Results.ReportPage exposing (viewComponentNotFoundPage, viewComponentPage)
+module ResultsPage exposing (..)
 
 import Dict exposing (Dict)
-import Header exposing (viewHeader)
+import Header
 import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Events
 import Report exposing (..)
 import Set exposing (Set)
-import UI exposing (Msg(..))
 
 
-viewComponentPage : String -> Component -> List Example -> Set String -> Html Msg
-viewComponentPage app component examples expanded =
-    Html.div
-        [ HA.class "component-page" ]
-        [ viewHeaderWithFilters app component.component
-        , Html.div [ HA.class "features" ] (List.map (viewFeature examples expanded) component.features)
-        ]
+type Msg
+    = ToggleExampleExpanded String
 
 
-viewHeaderWithFilters app component =
-    viewHeader
+viewHeader app component =
+    Header.view
         [ Html.a [ HA.href "/" ] [ Html.text app ]
         , Html.text " / "
         , Html.text component
         ]
-        [ Html.div [ HA.class "filters" ] [ Html.text "Filters" ] ]
 
 
 viewFeature : List Example -> Set String -> String -> Html Msg
@@ -93,7 +86,7 @@ viewExample expanded ({ example, type_, locations } as e) =
     <|
         [ Html.div
             [ HA.class "example-name"
-            , Html.Events.onClick (ToggleExample example)
+            , Html.Events.onClick (ToggleExampleExpanded example)
             ]
             ([ Html.text example ] ++ viewBadges e)
         ]
