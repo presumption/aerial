@@ -3,10 +3,7 @@ package org.aerial.read
 import org.aerial.read.ExampleType.*
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class ReadFeaturesTest {
 
@@ -369,24 +366,112 @@ class ReadFeaturesTest {
     @Test
     fun `non tests only scanned when explicitly allowed`() {
         assertAll(
-            { assertTrue(shouldScanFile("file1.py", true)) },
-            { assertFalse(shouldScanFile("file1.py", false)) }
+            {
+                assertTrue(
+                    shouldScanFile(
+                        name = "file1.py",
+                        scanNonTests = true,
+                        scanExtensionless = false
+                    )
+                )
+            },
+            {
+                assertFalse(
+                    shouldScanFile(
+                        name = "file1.py",
+                        scanNonTests = false,
+                        scanExtensionless = false
+                    )
+                )
+            }
         )
     }
 
     @Test
-    fun `tests always scanned`() {
+    fun `tests scanned by default`() {
         assertAll(
-            { assertTrue(shouldScanFile("test.py", true)) },
-            { assertTrue(shouldScanFile("test.py", false)) }
+            {
+                assertTrue(
+                    shouldScanFile(name = "test.py", scanNonTests = true, scanExtensionless = false)
+                )
+            },
+            {
+                assertTrue(
+                    shouldScanFile(
+                        name = "test.py",
+                        scanNonTests = false,
+                        scanExtensionless = false
+                    )
+                )
+            }
+        )
+    }
+
+    @Test
+    fun `files without extensions only scanned when explicitly allowed`() {
+        assertAll(
+            {
+                assertTrue(
+                    shouldScanFile(
+                        name = "test1",
+                        scanNonTests = false,
+                        scanExtensionless = true
+                    )
+                )
+            },
+            {
+                assertFalse(
+                    shouldScanFile(
+                        name = "test2",
+                        scanNonTests = false,
+                        scanExtensionless = false
+                    )
+                )
+            }
+        )
+    }
+
+    @Test
+    fun `files with extensions scanned by default`() {
+        assertAll(
+            {
+                assertTrue(
+                    shouldScanFile(name = "test.py", scanNonTests = false, scanExtensionless = true)
+                )
+            },
+            {
+                assertTrue(
+                    shouldScanFile(
+                        name = "test.py",
+                        scanNonTests = false,
+                        scanExtensionless = false
+                    )
+                )
+            }
         )
     }
 
     @Test
     fun `Aerial-specific files always scanned`() {
         assertAll(
-            { assertTrue(shouldScanFile("aerial-feature.txt", true)) },
-            { assertTrue(shouldScanFile("aerial-feature.txt", false)) }
+            {
+                assertTrue(
+                    shouldScanFile(
+                        name = "aerial-1.txt",
+                        scanNonTests = true,
+                        scanExtensionless = true
+                    )
+                )
+            },
+            {
+                assertTrue(
+                    shouldScanFile(
+                        name = "aerial-2",
+                        scanNonTests = false,
+                        scanExtensionless = false
+                    )
+                )
+            }
         )
     }
 
@@ -398,6 +483,7 @@ class ReadFeaturesTest {
     @Test
     fun `exclude files with wildcards`() {
         assertAll(
+            { assertTrue(isExcluded("temp", listOf("*temp*"))) },
             { assertTrue(isExcluded("my-temp-file", listOf("*temp*"))) },
             { assertTrue(isExcluded("hs_err_pid_123", listOf("hs_err_pid*"))) },
             { assertTrue(isExcluded("my.log", listOf("*.log"))) },
@@ -426,6 +512,17 @@ class ReadFeaturesTest {
                     "# comment",
                 )
             )
+        )
+    }
+
+    @Test
+    fun `default exclusion list is loaded correctly`() {
+        val cli = ReadFeatures()
+        cli.addExclusions = listOf("pattern1", "pattern2")
+        val exclusions = cli.getExclusions()
+        assertAll(
+            { assertContains(exclusions, "*.less") },
+            { assertContains(exclusions, "pattern1") },
         )
     }
 

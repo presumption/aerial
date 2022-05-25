@@ -3,7 +3,7 @@ Aerial view of software features, driven by tests.
 
 ## Build Aerial
     ./gradlew clean jar
-    alias aerial='java -jar ./build/libs/aerial-0.1.jar'
+    alias aerial='java -jar ./build/libs/aerial-{version}.jar'
 
 ## Read features
     aerial read /path/to/my/app
@@ -12,4 +12,4 @@ Aerial view of software features, driven by tests.
     aerial report --app='My App'
 
 ## View report
-    npx parcel report/**/report.html
+    npx parcel report/**/report.html --port 12345

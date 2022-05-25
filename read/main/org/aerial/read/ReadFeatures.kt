@@ -24,25 +24,36 @@ class ReadFeatures : Callable<Int> {
     var output: String = "build/"
 
     @Option(
-        names = ["-x", "--exclude"],
+        names = ["-x", "--add-exclude"],
         description = [
-            "Exclude files and folders with names that start with these prefixes. Good for excluding hidden files and caches. Wildcard support: only leading and trailing wildcards are supported. Default [\".*\"]."]
+            "Add an exclusion pattern to the list. Files and folders that match any exclusion pattern will not be scanned. Wildcard support: only leading and trailing wildcards are supported."]
     )
-    var exclusions: List<String> = listOf(".*")
+    var addExclusions: List<String> = listOf()
 
     @Option(
         names = ["--do-not-read-gitignore"],
         description = [
-            "By default, if there is a .gitignore in the root folder, it will be added to the exclusions list."]
+            "By default, if there is a .gitignore in the root folder, its contents will be added to the exclusions list. This is usually desired. This option disables this behavior."]
     )
     var doNotReadGitIgnore: Boolean = false
 
     @Option(
-        names = ["--scan-all"],
+        names = ["--scan-non-tests"],
         description = [
-            "By default, only test and Aerial-specific files will be scanned (files that have either \"test\" or \"aerial\" in the name, not case-sensitive). Enable this option to scan all files."]
+            "By default, only test files will be scanned (files with \"test\" in the name, not case-sensitive). Enable this option to scan both test and non-test files. Note: files with \"aerial\" in the name will always be scanned."]
     )
-    var scanAll: Boolean = false
+    var scanNonTests: Boolean = false
+
+    @Option(
+        names = ["--scan-extensionless"],
+        description = [
+            "By default, only files that have an extension will be scanned. Enable this option to scan both files with and without an extension. Note: files with \"aerial\" in the name will always be scanned."]
+    )
+    var scanExtensionless: Boolean = false
+
+    fun getExclusions(): List<String> {
+        return addExclusions + standardExcludeList
+    }
 
     override fun call(): Int {
         if (filenames.isEmpty()) {
@@ -50,10 +61,12 @@ class ReadFeatures : Callable<Int> {
             return 1
         }
 
+        val exclusions = getExclusions()
         println("Exclusions: $exclusions")
         val contents = scanFiles(
-            readGitIgnore = !doNotReadGitIgnore,
-            scanAll = scanAll,
+            readGitignore = !doNotReadGitIgnore,
+            scanNonTests = scanNonTests,
+            scanExtensionless = scanExtensionless,
             exclusions = exclusions,
             files = filenames.map { filename -> File(filename) }.toTypedArray()
         )
@@ -87,9 +100,28 @@ class ReadFeatures : Callable<Int> {
     }
 }
 
+val standardExcludeList = listOf(
+    ".*",
+    "__*",
+    "*.css",
+    "*.scss",
+    "*.less",
+    "*.png",
+    "*.jpg",
+    "*.jpeg",
+    "*.ico",
+    "*.svg",
+    "*.json",
+    "*.yml",
+    "*.xml",
+    "*.lock",
+    "*.jar"
+)
+
 private fun scanFiles(
-    readGitIgnore: Boolean,
-    scanAll: Boolean,
+    readGitignore: Boolean,
+    scanNonTests: Boolean,
+    scanExtensionless: Boolean,
     exclusions: Collection<String>,
     files: Array<File>
 ): Content {
@@ -107,27 +139,26 @@ private fun scanFiles(
         }
         if (file.isDirectory) {
             val childExclusions =
-                if (readGitIgnore) {
+                if (readGitignore) {
                     val additionalExclusions = readGitignore(file.path)
-                    if (additionalExclusions.isEmpty()) {
-                        exclusions
-                    } else {
+                    if (additionalExclusions.isNotEmpty()) {
                         println("Loaded additional exclusions from ${file.path}/.gitignore: $additionalExclusions")
-                        additionalExclusions.union(exclusions)
                     }
+                    additionalExclusions.union(exclusions)
                 } else {
                     exclusions
                 }
             content.combine(
                 scanFiles(
-                    readGitIgnore = readGitIgnore,
-                    scanAll = scanAll,
+                    readGitignore = readGitignore,
+                    scanNonTests = scanNonTests,
+                    scanExtensionless = scanExtensionless,
                     exclusions = childExclusions,
                     files = file.listFiles() ?: emptyArray()
                 )
             )
         } else {
-            if (shouldScanFile(file.name, scanAll)) {
+            if (shouldScanFile(file.name, scanNonTests, scanExtensionless)) {
                 content.combine(scanFile(file))
             }
         }
@@ -166,12 +197,18 @@ private fun scanFile(file: File): Content {
     return content
 }
 
-fun shouldScanFile(name: String, scanNonTests: Boolean): Boolean {
-    val testsOnly = !scanNonTests;
-    if (testsOnly && !name.lowercase().contains("test")) {
-        return name.contains("aerial")
+fun shouldScanFile(name: String, scanNonTests: Boolean, scanExtensionless: Boolean): Boolean {
+    if (name.contains("aerial")) {
+        return true
     }
-    return true
+    val isScanNonTestsOk = scanNonTests ||
+            (name.lowercase().contains("test"))
+    val isScanExtensionlessOk = scanExtensionless || hasExtension(name)
+    return isScanNonTestsOk && isScanExtensionlessOk
+}
+
+fun hasExtension(name: String): Boolean {
+    return (name.lastIndexOf(".") in 0 until name.length - 1)
 }
 
 private fun readGitignore(folder: String): List<String> {
