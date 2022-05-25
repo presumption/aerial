@@ -2,7 +2,7 @@
     "type": "application",
     "source-directories": [
         "lib/main",
-        "report/main/ui"
+        "report/main/viewer"
     ],
     "elm-version": "0.19.1",
     "dependencies": {
