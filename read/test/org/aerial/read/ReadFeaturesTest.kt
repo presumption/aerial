@@ -227,6 +227,90 @@ class ReadFeaturesTest {
     }
 
     @Test
+    fun `example tag is read correctly`() {
+        assertAll(
+            {
+                assertEquals(
+                    Res(feature = "Flights", type = EXAMPLE, indent = ""),
+                    readExampleTag("aerial:example Flights")
+                )
+            },
+            {
+                assertEquals(
+                    Res(feature = "Flights", type = TODO, indent = ""),
+                    readExampleTag("aerial:todo Flights")
+                )
+            },
+            {
+                assertEquals(
+                    Res(feature = "Flights", type = HOW_TO, indent = ""),
+                    readExampleTag("aerial:how-to Flights")
+                )
+            },
+            {
+                assertEquals(
+                    Res(feature = "Flights", type = EXAMPLE, indent = "// "),
+                    readExampleTag("// aerial:example Flights")
+                )
+            },
+            {
+                assertEquals(
+                    Res(
+                        feature = "Flights",
+                        type = EXAMPLE,
+                        indent = "     indent stuff here!     "
+                    ),
+                    readExampleTag("     indent stuff here!     aerial:example Flights")
+                )
+            },
+        )
+    }
+
+    @Test
+    fun `example name is extracted from within quotes if quotes are present`() {
+        assertAll(
+            { assertEquals("Hello world", readExampleName("", "  \"  Hello world  \"  ")) },
+            { assertEquals("Hello world", readExampleName("", "aaa   \" Hello world \"   aaa")) },
+            { assertEquals("Hello \"world\"", readExampleName("", "  \"Hello \"world\"\"  ")) },
+            { assertEquals("Hello \"world\"", readExampleName("// ", "// \"Hello \"world\"\"  ")) },
+        )
+    }
+
+    @Test
+    fun `example name is extracted based on matching indents if no quotes are present`() {
+        assertEquals("Hello world", readExampleName("",  "   Hello world    "))
+        assertEquals("Hello world", readExampleName("   //",  "   //      Hello world    "))
+    }
+
+    @Test
+    fun `read example with the name based on matching indents`() {
+        val text = """
+            0 hello world
+            // aerial:example Booking flights
+            // I book a flight for myself and my cat.
+            3 hello world
+        """.trim().split("\n")
+
+        val result = next(text, 1)
+
+        assertEquals(
+            LineResult(
+                skipLines = 2,
+                parsed = Example(
+                    name = "I book a flight for myself and my cat.",
+                    feature = "Booking flights",
+                    variables = setOf(),
+                    tags = setOf(),
+                    type = EXAMPLE,
+                    file = null,
+                    line = 2
+                )
+            ),
+            result
+        )
+    }
+
+    @Test
     fun `read example fails if no feature is specified`() {
         val text = """
             0 hello world
@@ -523,16 +607,6 @@ class ReadFeaturesTest {
         assertAll(
             { assertContains(exclusions, "*.less") },
             { assertContains(exclusions, "pattern1") },
-        )
-    }
-
-    @Test
-    fun `example name is extracted correctly`() {
-        assertAll(
-            { assertEquals("Hello world", readExampleName("   Hello world    ")) },
-            { assertEquals("Hello world", readExampleName("  \"  Hello world  \"  ")) },
-            { assertEquals("Hello world", readExampleName("aaa   \" Hello world \"   aaa")) },
-            { assertEquals("Hello \"world\"", readExampleName("  \"Hello \"world\"\"  ")) },
         )
     }
 }

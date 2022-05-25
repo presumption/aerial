@@ -295,11 +295,11 @@ fun isExample(line: String): Boolean {
 
 fun readExample(lines: List<String>, lineIndex: Int): LineResult {
     // aerial:example Booking flights
-    val (useCase, type) = readExampleFeature(lines[lineIndex])
+    val res = readExampleTag(lines[lineIndex])
     var skip = 1
 
     // test "I book a flight for myself and my cat."
-    val name = readExampleName(lines[lineIndex + skip])
+    val name = readExampleName(res.indent, lines[lineIndex + skip])
     skip += 1
 
     // variables:
@@ -327,17 +327,17 @@ fun readExample(lines: List<String>, lineIndex: Int): LineResult {
     return LineResult(
         skip,
         Example(
-            name = name, feature = useCase, variables = variables, tags = tags,
-            type = type, file = null, line = lineIndex + 1
+            name = name, feature = res.feature, variables = variables, tags = tags,
+            type = res.type, file = null, line = lineIndex + 1
         )
     )
 }
 
-fun readExampleName(line: String): String {
+fun readExampleName(indent: String, line: String): String {
     val name = try {
         extractWithinQuotes(line.trim())
     } catch (e: ParsingException) {
-        line
+        line.removePrefix(indent)
     }
     return name.trim().ifEmpty { throw ParsingException("Empty example name") }
 }
@@ -348,20 +348,23 @@ fun readCrossCut(lines: List<String>, lineIndex: Int): LineResult {
     return LineResult(1, Crosscut(name = name, file = null, line = lineIndex + 1))
 }
 
-fun readExampleFeature(text: String): Pair<String, ExampleType> {
+data class Res(val feature: String, val type: ExampleType, val indent: String)
+
+fun readExampleTag(text: String): Res {
+    // aerial:example Booking flights
     return when {
         containsKeyword(KW_HOW_TO, text) -> {
-            val useCase = extractAfterKeyword(KW_HOW_TO, text)
-            useCase to HOW_TO
+            val split = splitByKeyword(KW_HOW_TO, text)
+            Res(feature = split.second, type = HOW_TO, indent = split.first)
         }
         containsKeyword(KW_TODO, text) -> {
-            val useCase = extractAfterKeyword(KW_TODO, text)
-            useCase to TODO
+            val split = splitByKeyword(KW_TODO, text)
+            Res(feature = split.second, type = TODO, indent = split.first)
         }
         else -> {
             try {
-                val useCase = readAfterKeyword(KW_EXAMPLE, text)
-                useCase to EXAMPLE
+                val split = splitByKeyword(KW_EXAMPLE, text)
+                Res(feature = split.second, type = EXAMPLE, indent = split.first)
             } catch (e: ParsingException) {
                 throw ParsingException("Failed to parse use case name: ${e.message}")
             }

@@ -42,6 +42,23 @@ fun extractAfterKeyword(keyword: String, text: String): String {
     }
 }
 
+fun splitByKeyword(keyword: String, text: String): Pair<String, String> {
+    val extracted = text.split(keyword)
+    if (extracted.size != 2) {
+        throw ParsingException("Expected keyword [$keyword], but did not find it!")
+    }
+    val indent = extracted[0]
+    val rest = extracted[1].trim()
+    when {
+        rest.isBlank() -> {
+            throw ParsingException("Expected text after keyword [$keyword], but it was blank!")
+        }
+        else -> {
+            return indent to rest
+        }
+    }
+}
+
 @Throws(ParsingException::class)
 fun readAfterKeyword(keyword: String, text: String): String {
     ensureKeyword(keyword, text)
