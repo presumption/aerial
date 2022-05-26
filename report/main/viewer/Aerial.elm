@@ -147,7 +147,7 @@ viewComponentPage app component examples expanded =
         [ HA.class "component-page" ]
         [ ResultsPage.viewHeader app component.component
             |> Html.map ThemeMsg
-        , Html.div [ HA.class "features" ] (List.map (ResultsPage.viewFeature examples expanded) component.features)
+        , Html.div [ HA.class "categories" ] (List.map (ResultsPage.viewFeature examples expanded) component.features)
             |> Html.map ResultsPageMsg
         ]
 
