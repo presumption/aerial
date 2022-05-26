@@ -6,7 +6,7 @@ Aerial view of software features, driven by tests.
     alias aerial='java -jar ./build/libs/aerial-{version}.jar'
 
 ## Read features
-    aerial read /path/to/my/app
+    aerial scan /path/to/my/app
 
 ## Build report
     aerial report --app='My App'
