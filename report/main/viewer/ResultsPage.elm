@@ -13,24 +13,37 @@ type Msg
     = ToggleExampleExpanded String
 
 
-viewHeader app component =
+viewHeader app subcategory =
     Header.view
         [ Html.a [ HA.href "/" ] [ Html.text app ]
         , Html.text " / "
-        , Html.text component
+        , Html.text subcategory
         ]
 
 
 viewFeature : List Example -> Set String -> String -> Html Msg
 viewFeature examples expanded feature =
     Html.div
-        [ HA.class "feature" ]
+        [ HA.class "category" ]
     <|
-        [ Html.div [ HA.class "feature-name" ]
+        [ Html.div [ HA.class "category-name" ]
             [ Html.a [ HA.href <| "#" ++ feature ] [ Html.text "§ " ]
             , Html.span [] [ Html.text feature ]
             ]
         , viewExamples expanded <| examplesForFeature feature examples
+        ]
+
+
+viewJourney : List Example -> Set String -> String -> Html Msg
+viewJourney examples expanded journey =
+    Html.div
+        [ HA.class "category" ]
+    <|
+        [ Html.div [ HA.class "category-name" ]
+            [ Html.a [ HA.href <| "#" ++ journey ] [ Html.text "§ " ]
+            , Html.span [] [ Html.text journey ]
+            ]
+        , viewExamples expanded <| examplesForJourney journey examples
         ]
 
 
@@ -150,6 +163,10 @@ viewVariableValue key =
 
 examplesForFeature feature examples =
     List.filter (.category >> matchesFeature feature) examples
+
+
+examplesForJourney feature examples =
+    List.filter (.category >> matchesJourney feature) examples
 
 
 viewComponentNotFoundPage component =

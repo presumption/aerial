@@ -193,3 +193,31 @@ matchesComponent query category =
 
         _ ->
             False
+
+
+matchesJourney query category =
+    case category of
+        JourneyCategory journey ->
+            journey == query
+
+        _ ->
+            False
+
+
+isJourneyExample category =
+    case category of
+        JourneyCategory _ ->
+            True
+
+        _ ->
+            False
+
+
+examplesForComponent : String -> List Example -> List Example
+examplesForComponent component examples =
+    List.filter (.category >> matchesComponent component) examples
+
+
+journeyExamples : List Example -> List Example
+journeyExamples examples =
+    List.filter (.category >> isJourneyExample) examples

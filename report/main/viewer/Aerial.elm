@@ -72,8 +72,8 @@ update msg model =
         ThemeMsg ToggleTheme ->
             ( { model | theme = Theme.toggleTheme model.theme }, Cmd.none )
 
-        OverviewPageMsg (FilterBy (ComponentNameEquals name)) ->
-            ( { model | filters = Filters.filterBy name model.filters }, Cmd.none )
+        OverviewPageMsg (FilterBy filter) ->
+            ( { model | filters = Filters.filterBy filter model.filters }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -96,19 +96,17 @@ view model =
                     Nothing ->
                         viewComponentNotFoundPage name
 
+            Just Journeys ->
+                viewJourneysPage model.report.app model.report.journeys (journeyExamples model.report.examples) model.ui.expanded
+
             _ ->
-                viewOverviewPage model.report.app model.report.components
+                viewOverviewPage model.report.app model.report.components model.report.journeys
         ]
 
 
 findComponent : String -> List Component -> Maybe Component
 findComponent name components =
     List.filter (.component >> (==) name) components |> List.head
-
-
-examplesForComponent : String -> List Example -> List Example
-examplesForComponent component examples =
-    List.filter (.category >> matchesComponent component) examples
 
 
 type alias UI =
@@ -131,14 +129,14 @@ toggleExample example ui =
         { ui | expanded = Set.insert example ui.expanded }
 
 
-viewOverviewPage : String -> List Component -> Html Msg
-viewOverviewPage app components =
+viewOverviewPage : String -> List Component -> List Journey -> Html Msg
+viewOverviewPage app components journeys =
     Html.div
         [ HA.class "overview-page" ]
     <|
         [ OverviewPage.viewHeader app
             |> Html.map ThemeMsg
-        , Html.div [ HA.class "components" ] (List.map viewComponent components)
+        , OverviewPage.viewContent components journeys
             |> Html.map OverviewPageMsg
         ]
 
@@ -150,5 +148,16 @@ viewComponentPage app component examples expanded =
         [ ResultsPage.viewHeader app component.component
             |> Html.map ThemeMsg
         , Html.div [ HA.class "features" ] (List.map (ResultsPage.viewFeature examples expanded) component.features)
+            |> Html.map ResultsPageMsg
+        ]
+
+
+viewJourneysPage : String -> List Journey -> List Example -> Set String -> Html Msg
+viewJourneysPage app journeys examples expanded =
+    Html.div
+        [ HA.class "component-page" ]
+        [ ResultsPage.viewHeader app "Journeys"
+            |> Html.map ThemeMsg
+        , Html.div [ HA.class "categories" ] (List.map (.name >> ResultsPage.viewJourney examples expanded) journeys)
             |> Html.map ResultsPageMsg
         ]

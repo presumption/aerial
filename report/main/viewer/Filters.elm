@@ -7,11 +7,12 @@ type alias Filters =
 
 type Filter
     = ComponentNameEquals String
+    | Journeys
 
 
 empty =
     []
 
 
-filterBy name filters =
-    [ ComponentNameEquals name ]
+filterBy filter filters =
+    [ filter ]

@@ -17,51 +17,49 @@
     justify-content: center;
   }
 
-  .component, .component-empty {
+  .component, .component-empty, .journeys {
     background-color: var(--color-base-2);
+    .strip-link-style();
   }
 
-  .component-name {
+  .component-name, .journeys-title {
     .strip-button-style();
     .title();
     width: 100%;
     display: block;
     text-align: center;
     padding: @space2 @space4 @space2 @space4;
+    border-bottom: 2px solid var(--color-base-4);
+
+    &:hover {
+      background-color: var(--color-accent);
+      color: var(--color-accent-contrast);
+      cursor: pointer;
+    }
   }
 
-  .component {
+  .component-content, .journeys-content {
+    padding-bottom: @space2;
+  }
+
+  .journey {
+    .strip-button-style();
+  }
+
+  .feature, .journey {
     .strip-link-style();
+    display: block;
+    padding: @space2 @space8;
 
-    .component-name {
-      border-bottom: 2px solid var(--color-base-4);
-
-      &:hover {
-        background-color: var(--color-accent);
-        color: var(--color-accent-contrast);
-        cursor: pointer;
-      }
-    }
-
-    .component-features {
-      padding-bottom: @space2;
-    }
-
-    .feature {
-      .strip-link-style();
-      display: block;
-      padding: @space2 @space8;
-
-      &:hover {
-        background-color: var(--color-accent-subtle-1);
-        color: var(--color-accent-contrast);
-        cursor: pointer;
-      }
+    &:hover {
+      background-color: var(--color-accent-subtle-1);
+      color: var(--color-accent-contrast);
+      cursor: pointer;
     }
   }
 
   .component-empty {
-    .component-features {
+    .component-content {
       padding: 0 @space4 @space2 @space4;
       text-align: center;
     }
