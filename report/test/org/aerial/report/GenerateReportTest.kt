@@ -38,30 +38,30 @@ class GenerateReportTest {
         val exampleName = "User can log in"
         val featureName = "Login"
         val examples = listOf(
-            org.aerial.read.Example(
+            org.aerial.scan.Example(
                 name = exampleName,
                 feature = featureName,
                 variables = setOf("Admin"),
                 tags = setOf("tag1"),
-                type = org.aerial.read.ExampleType.EXAMPLE,
+                type = org.aerial.scan.ExampleType.EXAMPLE,
                 file = "file1",
                 line = 111
             ),
-            org.aerial.read.Example(
+            org.aerial.scan.Example(
                 name = exampleName,
                 feature = featureName,
                 variables = setOf("Regular"),
                 tags = setOf("tag2"),
-                type = org.aerial.read.ExampleType.EXAMPLE,
+                type = org.aerial.scan.ExampleType.EXAMPLE,
                 file = "file2",
                 line = 222
             ),
-            org.aerial.read.Example(
+            org.aerial.scan.Example(
                 name = exampleName,
                 feature = featureName,
                 variables = setOf(),
                 tags = setOf("tag3"),
-                type = org.aerial.read.ExampleType.HOW_TO,
+                type = org.aerial.scan.ExampleType.HOW_TO,
                 file = "file3",
                 line = 333
             )
@@ -95,9 +95,9 @@ class GenerateReportTest {
     fun `TODO type takes precedence`() {
         val result = determineType(
             listOf(
-                org.aerial.read.ExampleType.TODO,
-                org.aerial.read.ExampleType.HOW_TO,
-                org.aerial.read.ExampleType.EXAMPLE
+                org.aerial.scan.ExampleType.TODO,
+                org.aerial.scan.ExampleType.HOW_TO,
+                org.aerial.scan.ExampleType.EXAMPLE
             )
         )
         assertEquals(TODO, result)
@@ -108,8 +108,8 @@ class GenerateReportTest {
     fun `HOW-TO type takes precedence over EXAMPLE`() {
         val result = determineType(
             listOf(
-                org.aerial.read.ExampleType.HOW_TO,
-                org.aerial.read.ExampleType.EXAMPLE
+                org.aerial.scan.ExampleType.HOW_TO,
+                org.aerial.scan.ExampleType.EXAMPLE
             )
         )
         assertEquals(HOW_TO, result)
@@ -120,8 +120,8 @@ class GenerateReportTest {
     fun `EXAMPLE type is selected if no other types are specified`() {
         val result = determineType(
             listOf(
-                org.aerial.read.ExampleType.EXAMPLE,
-                org.aerial.read.ExampleType.EXAMPLE
+                org.aerial.scan.ExampleType.EXAMPLE,
+                org.aerial.scan.ExampleType.EXAMPLE
             )
         )
         assertEquals(EXAMPLE, result)

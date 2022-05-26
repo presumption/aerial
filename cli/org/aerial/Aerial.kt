@@ -1,6 +1,6 @@
 package org.aerial
 
-import org.aerial.read.ReadFeatures
+import org.aerial.scan.ScanFeatures
 import org.aerial.report.GenerateReport
 import picocli.CommandLine
 import picocli.CommandLine.Command
@@ -11,7 +11,7 @@ import kotlin.system.exitProcess
     name = "aerial",
     description = ["Aerial CLI"],
     mixinStandardHelpOptions = true,
-    subcommands = [ReadFeatures::class, GenerateReport::class]
+    subcommands = [ScanFeatures::class, GenerateReport::class]
 )
 class Aerial : Callable<Int> {
 

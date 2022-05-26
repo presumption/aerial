@@ -1,19 +1,19 @@
-package org.aerial.read
+package org.aerial.scan
 
 import com.google.gson.GsonBuilder
 import org.aerial.lib.filtermap
-import org.aerial.read.ExampleType.*
+import org.aerial.scan.ExampleType.*
 import picocli.CommandLine
 import picocli.CommandLine.*
 import java.io.File
 import java.util.concurrent.Callable
 
 @Command(
-    name = "read",
+    name = "scan",
     mixinStandardHelpOptions = true,
-    description = ["Reads features from specified files."]
+    description = ["Scans filetree for feature specifications."]
 )
-class ReadFeatures : Callable<Int> {
+class ScanFeatures : Callable<Int> {
     @Parameters(
         paramLabel = "FILE",
         description = ["Files/folders to scan."]
@@ -76,6 +76,7 @@ class ReadFeatures : Callable<Int> {
         val componentsFile = "components.json"
         val variablesFile = "variables.json"
         val crosscutsFile = "crosscuts.json"
+        val journeysFile = "journeys.json"
         val examplesFile = "examples.json"
 
         if (contents.errors.isNotEmpty()) {
@@ -88,12 +89,14 @@ class ReadFeatures : Callable<Int> {
         println("Writing ${contents.components.size} features to $componentsFile")
         println("Writing ${contents.variables.size} variables to $variablesFile")
         println("Writing ${contents.crosscuts.size} crosscuts to $crosscutsFile")
+        println("Writing ${contents.journeys.size} examples to $journeysFile")
         println("Writing ${contents.examples.size} examples to $examplesFile")
 
         File(output).mkdirs()
         File(output).resolve(componentsFile).writeText(gson.toJson(contents.components))
         File(output).resolve(variablesFile).writeText(gson.toJson(contents.variables))
         File(output).resolve(crosscutsFile).writeText(gson.toJson(contents.crosscuts))
+        File(output).resolve(journeysFile).writeText(gson.toJson(contents.journeys))
         File(output).resolve(examplesFile).writeText(gson.toJson(contents.examples))
 
         return 0
@@ -130,6 +133,7 @@ private fun scanFiles(
         variables = mutableSetOf(),
         crosscuts = mutableSetOf(),
         examples = mutableSetOf(),
+        journeys = mutableSetOf(),
         errors = mutableListOf()
     )
 
@@ -175,6 +179,7 @@ private fun scanFile(file: File): Content {
         variables = mutableSetOf(),
         crosscuts = mutableSetOf(),
         examples = mutableSetOf(),
+        journeys = mutableSetOf(),
         errors = mutableListOf()
     )
 
@@ -282,6 +287,9 @@ fun next(lines: List<String>, lineIndex: Int): LineResult {
         containsKeyword(KW_VARIABLE, line) -> {
             return readVariable(lines, lineIndex)
         }
+        containsKeyword(KW_JOURNEY, line) -> {
+            return readJourney(lines, lineIndex)
+        }
     }
 
     return LineResult(1, null)
@@ -348,6 +356,18 @@ fun readCrossCut(lines: List<String>, lineIndex: Int): LineResult {
     return LineResult(1, Crosscut(name = name, file = null, line = lineIndex + 1))
 }
 
+fun readJourney(lines: List<String>, lineIndex: Int): LineResult {
+    // aerial:journey Sample journey name
+    val name = readAfterKeyword(KW_JOURNEY, lines[lineIndex])
+    var skip = 1
+
+    // desc: Journey description
+    val desc = readAfterKeyword(KW_DESC, lines[lineIndex + skip])
+    skip += 1
+
+    return LineResult(skip, Journey(name = name, desc = desc, file = null, line = lineIndex + 1))
+}
+
 data class Res(val feature: String, val type: ExampleType, val indent: String)
 
 fun readExampleTag(text: String): Res {
@@ -378,7 +398,7 @@ fun readComponent(lines: List<String>, lineIndex: Int): LineResult {
     var skip = 1
 
     // desc: Want to travel? Book a flight!
-    val desc = readAfterKeyword(KW_COMPONENT_DESC, lines[lineIndex + skip])
+    val desc = readAfterKeyword(KW_DESC, lines[lineIndex + skip])
     skip += 1
 
     // tags: flights, travel, cat-friendly

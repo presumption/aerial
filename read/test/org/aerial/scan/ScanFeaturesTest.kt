@@ -1,11 +1,11 @@
-package org.aerial.read
+package org.aerial.scan
 
-import org.aerial.read.ExampleType.*
+import org.aerial.scan.ExampleType.*
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.*
 
-class ReadFeaturesTest {
+class ScanFeaturesTest {
 
     @Test
     fun `read line with no Aerial tags`() {
@@ -278,8 +278,8 @@ class ReadFeaturesTest {
 
     @Test
     fun `example name is extracted based on matching indents if no quotes are present`() {
-        assertEquals("Hello world", readExampleName("",  "   Hello world    "))
-        assertEquals("Hello world", readExampleName("   //",  "   //      Hello world    "))
+        assertEquals("Hello world", readExampleName("", "   Hello world    "))
+        assertEquals("Hello world", readExampleName("   //", "   //      Hello world    "))
     }
 
     @Test
@@ -448,6 +448,30 @@ class ReadFeaturesTest {
     }
 
     @Test
+    fun `read journey`() {
+        val text = """
+            0 hello world
+            1 aerial:journey New user doesn't know how to sign up
+            2 desc: User checks multiple pages, searching for a sign-up form.
+            3 hello world
+        """.trim().split("\n")
+
+        val result = next(text, 1)
+
+        assertEquals(
+            LineResult(
+                skipLines = 2,
+                parsed = Journey(
+                    "New user doesn't know how to sign up",
+                    "User checks multiple pages, searching for a sign-up form.",
+                    null, line = 2
+                )
+            ),
+            result
+        )
+    }
+
+    @Test
     fun `non tests only scanned when explicitly allowed`() {
         assertAll(
             {
@@ -601,7 +625,7 @@ class ReadFeaturesTest {
 
     @Test
     fun `default exclusion list is loaded correctly`() {
-        val cli = ReadFeatures()
+        val cli = ScanFeatures()
         cli.addExclusions = listOf("pattern1", "pattern2")
         val exclusions = cli.getExclusions()
         assertAll(

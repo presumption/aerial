@@ -45,10 +45,10 @@ class GenerateReport : Callable<Int> {
         val variablesFile = inputDir.resolve("variables.json")
 
         val gson = GsonBuilder().setPrettyPrinting().create()
-        val components = gson.fromJson<List<org.aerial.read.Component>>(componentsFile.reader())
-        val crosscuts = gson.fromJson<List<org.aerial.read.Crosscut>>(crosscutsFile.reader())
-        val examples = gson.fromJson<List<org.aerial.read.Example>>(examplesFile.reader())
-        val variables = gson.fromJson<List<org.aerial.read.Variable>>(variablesFile.reader())
+        val components = gson.fromJson<List<org.aerial.scan.Component>>(componentsFile.reader())
+        val crosscuts = gson.fromJson<List<org.aerial.scan.Crosscut>>(crosscutsFile.reader())
+        val examples = gson.fromJson<List<org.aerial.scan.Example>>(examplesFile.reader())
+        val variables = gson.fromJson<List<org.aerial.scan.Variable>>(variablesFile.reader())
 
         val report = collate(components, crosscuts, examples, variables)
         println("Writing report to: ${output}")
@@ -58,10 +58,10 @@ class GenerateReport : Callable<Int> {
     }
 
     private fun collate(
-        readComponents: List<org.aerial.read.Component>,
-        readCrosscuts: List<org.aerial.read.Crosscut>,
-        readExamples: List<org.aerial.read.Example>,
-        readVariables: List<org.aerial.read.Variable>
+        readComponents: List<org.aerial.scan.Component>,
+        readCrosscuts: List<org.aerial.scan.Crosscut>,
+        readExamples: List<org.aerial.scan.Example>,
+        readVariables: List<org.aerial.scan.Variable>
     ): Report {
         val errors = mutableListOf<String>()
 
@@ -98,7 +98,7 @@ class GenerateReport : Callable<Int> {
 }
 
 fun mapComponents(
-    components: List<org.aerial.read.Component>, errors: MutableList<String>
+    components: List<org.aerial.scan.Component>, errors: MutableList<String>
 ): List<Component> {
     val result = mutableListOf<Component>()
 
@@ -112,7 +112,7 @@ fun mapComponents(
     return result
 }
 
-fun mapComponent(component: org.aerial.read.Component): Component {
+fun mapComponent(component: org.aerial.scan.Component): Component {
     val file =
         component.file ?: throw CollatingException("File not found for component ${component.name}")
     return Component(
@@ -128,7 +128,7 @@ fun mapComponent(component: org.aerial.read.Component): Component {
 fun mapExamples(
     components: List<Component>,
     variables: List<Variable>,
-    examples: List<org.aerial.read.Example>,
+    examples: List<org.aerial.scan.Example>,
     errors: MutableList<String>
 ): List<Example> {
     val variableLookup = reverseLookup(variables)
@@ -157,7 +157,7 @@ fun mapExample(
     componentLookup: List<Component>,
     variableLookup: Map<String, String>,
     name: String,
-    examples: List<org.aerial.read.Example>
+    examples: List<org.aerial.scan.Example>
 ): Example {
     val allFeatures = examples.map { example -> example.feature }.toSet().toList()
     val feature = if (allFeatures.size == 1) allFeatures[0] else
@@ -189,13 +189,13 @@ fun mapExample(
     )
 }
 
-fun determineType(types: List<org.aerial.read.ExampleType>): ExampleType {
+fun determineType(types: List<org.aerial.scan.ExampleType>): ExampleType {
     val mappedTypes =
         types.map { type ->
             when (type) {
-                org.aerial.read.ExampleType.TODO -> TODO
-                org.aerial.read.ExampleType.HOW_TO -> HOW_TO
-                org.aerial.read.ExampleType.EXAMPLE -> EXAMPLE
+                org.aerial.scan.ExampleType.TODO -> TODO
+                org.aerial.scan.ExampleType.HOW_TO -> HOW_TO
+                org.aerial.scan.ExampleType.EXAMPLE -> EXAMPLE
             }
         }
     return when {
@@ -215,8 +215,8 @@ fun reverseLookup(variables: List<Variable>): Map<String, String> {
     return map
 }
 
-fun groupExamplesByName(examples: List<org.aerial.read.Example>): Map<String, List<org.aerial.read.Example>> {
-    val result = mutableMapOf<String, MutableList<org.aerial.read.Example>>()
+fun groupExamplesByName(examples: List<org.aerial.scan.Example>): Map<String, List<org.aerial.scan.Example>> {
+    val result = mutableMapOf<String, MutableList<org.aerial.scan.Example>>()
 
     for (example in examples) {
 //        val file = example.file
@@ -247,7 +247,7 @@ fun reconstructVariables(lookup: Map<String, String>, values: Set<String>): Map<
     return map
 }
 
-fun mapCrosscut(crosscut: org.aerial.read.Crosscut): Crosscut {
+fun mapCrosscut(crosscut: org.aerial.scan.Crosscut): Crosscut {
     val file =
         crosscut.file ?: throw CollatingException("File not found for crosscut ${crosscut.name}")
     return Crosscut(
@@ -256,7 +256,7 @@ fun mapCrosscut(crosscut: org.aerial.read.Crosscut): Crosscut {
 
 }
 
-fun mapVariable(variable: org.aerial.read.Variable): Variable {
+fun mapVariable(variable: org.aerial.scan.Variable): Variable {
     val file =
         variable.file ?: throw CollatingException("File not found for variable ${variable.name}")
     return Variable(

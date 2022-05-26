@@ -1,7 +1,6 @@
-package org.aerial.read
+package org.aerial.scan
 
 const val KW_COMPONENT = "aerial:component"
-const val KW_COMPONENT_DESC = "desc:"
 const val KW_COMPONENT_FEATURES = "features:"
 
 const val KW_VARIABLE = "aerial:variable"
@@ -13,6 +12,9 @@ const val KW_EXAMPLE_VARIABLES = "variables:"
 
 const val KW_CROSS_CUT = "aerial:cross-cut"
 
+const val KW_JOURNEY = "aerial:journey"
+
+const val KW_DESC = "desc:"
 const val KW_TAGS = "tags:"
 const val PREFIX_LIST_ITEM = "\\* "
 const val SEP_INLINE_LIST = ","
