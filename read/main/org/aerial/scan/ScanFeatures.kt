@@ -335,7 +335,7 @@ fun readExample(lines: List<String>, lineIndex: Int): LineResult {
     return LineResult(
         skip,
         Example(
-            name = name, feature = res.feature, variables = variables, tags = tags,
+            name = name, category = res.feature, variables = variables, tags = tags,
             type = res.type, file = null, line = lineIndex + 1
         )
     )
@@ -459,6 +459,9 @@ fun setFilename(file: String, obj: Any?) {
             obj.file = file
         }
         is Crosscut -> {
+            obj.file = file
+        }
+        is Journey -> {
             obj.file = file
         }
         is Variable -> {

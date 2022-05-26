@@ -149,7 +149,7 @@ viewVariableValue key =
 
 
 examplesForFeature feature examples =
-    List.filter (.feature >> (==) feature) examples
+    List.filter (.category >> matchesFeature feature) examples
 
 
 viewComponentNotFoundPage component =

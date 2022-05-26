@@ -43,7 +43,7 @@ class ScanFeaturesTest {
                 skipLines = 6,
                 parsed = Example(
                     name = "I book a flight for myself and my cat.",
-                    feature = "Booking flights",
+                    category = "Booking flights",
                     variables = setOf("Business class", "Vegetarian menu"),
                     tags = setOf("pet-friendly", "travel"),
                     type = EXAMPLE,
@@ -71,7 +71,7 @@ class ScanFeaturesTest {
                 skipLines = 2,
                 parsed = Example(
                     name = "I book a flight for myself and my cat.",
-                    feature = "Booking flights",
+                    category = "Booking flights",
                     variables = setOf(),
                     tags = setOf(),
                     type = EXAMPLE,
@@ -98,7 +98,7 @@ class ScanFeaturesTest {
                 skipLines = 2,
                 parsed = Example(
                     name = "I book a flight for myself and my cat.",
-                    feature = "Booking flights",
+                    category = "Booking flights",
                     variables = setOf(),
                     tags = setOf(),
                     type = EXAMPLE,
@@ -127,7 +127,7 @@ class ScanFeaturesTest {
                 skipLines = 3,
                 parsed = Example(
                     name = "I book a flight for myself and my cat.",
-                    feature = "Booking flights",
+                    category = "Booking flights",
                     variables = setOf(),
                     tags = setOf("pet-friendly", "travel"),
                     type = EXAMPLE,
@@ -158,7 +158,7 @@ class ScanFeaturesTest {
                 skipLines = 5,
                 parsed = Example(
                     name = "I book a flight for myself and my cat.",
-                    feature = "Booking flights",
+                    category = "Booking flights",
                     variables = setOf("Business class", "Vegetarian menu"),
                     tags = setOf(),
                     type = EXAMPLE,
@@ -186,7 +186,7 @@ class ScanFeaturesTest {
                 skipLines = 2,
                 parsed = Example(
                     name = "To book a flight, select the number of human and cat passengers.",
-                    feature = "Booking flights",
+                    category = "Booking flights",
                     variables = setOf(),
                     tags = setOf(),
                     type = HOW_TO,
@@ -214,7 +214,7 @@ class ScanFeaturesTest {
                 skipLines = 2,
                 parsed = Example(
                     name = "To book a flight, select the number of human and cat passengers.",
-                    feature = "Booking flights",
+                    category = "Booking flights",
                     variables = setOf(),
                     tags = setOf(),
                     type = TODO,
@@ -298,7 +298,7 @@ class ScanFeaturesTest {
                 skipLines = 2,
                 parsed = Example(
                     name = "I book a flight for myself and my cat.",
-                    feature = "Booking flights",
+                    category = "Booking flights",
                     variables = setOf(),
                     tags = setOf(),
                     type = EXAMPLE,

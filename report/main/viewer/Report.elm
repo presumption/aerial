@@ -1,6 +1,7 @@
 module Report exposing (..)
 
 import Dict exposing (Dict)
+import Helpers exposing (debugDecoder)
 import Json.Decode as Decode exposing (Decoder)
 
 
@@ -13,6 +14,7 @@ type alias Report =
     , components : List Component
     , examples : List Example
     , crosscuts : List Crosscut
+    , journeys : List Journey
     , variables : List Variable
     }
 
@@ -28,14 +30,18 @@ type alias Component =
 
 
 type alias Example =
-    { component : String
-    , feature : String
+    { category : Category
     , example : String
     , variables : Dict String String
     , tags : List String
     , type_ : ExampleType
     , locations : List Loc
     }
+
+
+type Category
+    = ComponentCategory { component : String, feature : String }
+    | JourneyCategory String
 
 
 type ExampleType
@@ -57,6 +63,14 @@ type alias Crosscut =
     }
 
 
+type alias Journey =
+    { name : String
+    , desc : String
+    , file : String
+    , line : Int
+    }
+
+
 type alias Variable =
     { name : String
     , values : List String
@@ -67,11 +81,12 @@ type alias Variable =
 
 decoder : Decoder Report
 decoder =
-    Decode.map5 Report
+    Decode.map6 Report
         (Decode.field "app" <| Decode.string)
         (Decode.field "components" <| Decode.list componentDecoder)
         (Decode.field "examples" <| Decode.list exampleDecoder)
         (Decode.field "crosscuts" <| Decode.list crosscutDecoder)
+        (Decode.field "journeys" <| Decode.list journeyDecoder)
         (Decode.field "variables" <| Decode.list variableDecoder)
 
 
@@ -88,14 +103,25 @@ componentDecoder =
 
 exampleDecoder : Decoder Example
 exampleDecoder =
-    Decode.map7 Example
-        (Decode.field "component" <| Decode.string)
-        (Decode.field "feature" <| Decode.string)
+    Decode.map6 Example
+        (Decode.field "category" <| categoryDecoder)
         (Decode.field "example" <| Decode.string)
         (Decode.field "variables" <| Decode.dict Decode.string)
         (Decode.field "tags" <| Decode.list Decode.string)
         (Decode.field "type" <| exampleTypeDecoder)
         (Decode.field "locations" <| Decode.list locDecoder)
+
+
+categoryDecoder : Decoder Category
+categoryDecoder =
+    Decode.oneOf
+        [ Decode.map2
+            (\component feature -> ComponentCategory { component = component, feature = feature })
+            (Decode.field "component" Decode.string)
+            (Decode.field "feature" Decode.string)
+        , Decode.map JourneyCategory <|
+            Decode.field "journey" Decode.string
+        ]
 
 
 exampleTypeDecoder : Decoder ExampleType
@@ -126,6 +152,15 @@ crosscutDecoder =
         (Decode.field "line" <| Decode.int)
 
 
+journeyDecoder : Decoder Journey
+journeyDecoder =
+    Decode.map4 Journey
+        (Decode.field "name" <| Decode.string)
+        (Decode.field "desc" <| Decode.string)
+        (Decode.field "file" <| Decode.string)
+        (Decode.field "line" <| Decode.int)
+
+
 variableDecoder : Decoder Variable
 variableDecoder =
     Decode.map4 Variable
@@ -140,3 +175,21 @@ locDecoder =
     Decode.map2 Loc
         (Decode.field "file" <| Decode.string)
         (Decode.field "line" <| Decode.int)
+
+
+matchesFeature query category =
+    case category of
+        ComponentCategory { feature } ->
+            feature == query
+
+        _ ->
+            False
+
+
+matchesComponent query category =
+    case category of
+        ComponentCategory { component } ->
+            component == query
+
+        _ ->
+            False

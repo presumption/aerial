@@ -10,7 +10,7 @@ data class Component(
 
 data class Example(
     val name: String,
-    val feature: String,
+    val category: String,
     val variables: Set<String>,
     val tags: Set<String>,
     val type: ExampleType,

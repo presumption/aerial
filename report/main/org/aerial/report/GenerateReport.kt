@@ -41,46 +41,51 @@ class GenerateReport : Callable<Int> {
         val inputDir = File(input)
         val componentsFile = inputDir.resolve("components.json")
         val crosscutsFile = inputDir.resolve("crosscuts.json")
+        val journeysFile = inputDir.resolve("journeys.json")
         val examplesFile = inputDir.resolve("examples.json")
         val variablesFile = inputDir.resolve("variables.json")
 
         val gson = GsonBuilder().setPrettyPrinting().create()
         val components = gson.fromJson<List<org.aerial.scan.Component>>(componentsFile.reader())
         val crosscuts = gson.fromJson<List<org.aerial.scan.Crosscut>>(crosscutsFile.reader())
+        val journeys = gson.fromJson<List<org.aerial.scan.Journey>>(journeysFile.reader())
         val examples = gson.fromJson<List<org.aerial.scan.Example>>(examplesFile.reader())
         val variables = gson.fromJson<List<org.aerial.scan.Variable>>(variablesFile.reader())
 
-        val report = collate(components, crosscuts, examples, variables)
-        println("Writing report to: ${output}")
+        val report = collate(components, crosscuts, journeys, examples, variables)
+        println("Writing report to: $output")
         File(output).writeText(gson.toJson(report))
 
         return 0
     }
 
     private fun collate(
-        readComponents: List<org.aerial.scan.Component>,
-        readCrosscuts: List<org.aerial.scan.Crosscut>,
-        readExamples: List<org.aerial.scan.Example>,
-        readVariables: List<org.aerial.scan.Variable>
+        scannedComponents: List<org.aerial.scan.Component>,
+        scannedCrosscuts: List<org.aerial.scan.Crosscut>,
+        scannedJourneys: List<org.aerial.scan.Journey>,
+        scannedExamples: List<org.aerial.scan.Example>,
+        scannedVariables: List<org.aerial.scan.Variable>
     ): Report {
         val errors = mutableListOf<String>()
 
         // TODO check for component name/feature duplicates
-        val components = mapComponents(errors = errors, components = readComponents)
+        val components = mapComponents(errors = errors, components = scannedComponents)
 
-        // TODO check for variable name/value duplicates
-        val variables = readVariables.map { variable -> mapVariable(variable) }
+        // TODO check for variable name/value duplicates and collect errors
+        val variables = scannedVariables.map(::mapVariable)
 
-        // TODO check for crosscut duplicates
-        val crosscuts = readCrosscuts.map { crosscut -> mapCrosscut(crosscut) }
+        // TODO check for crosscut duplicates and collect errors
+        val crosscuts = scannedCrosscuts.map(::mapCrosscut)
+
+        // TODO check for journey duplicates and collect errors
+        val journeys = scannedJourneys.map(::mapJourney)
 
         // TODO check for variable duplicates
         val examples = mapExamples(
-            components = components, variables = variables,
-            examples = readExamples, errors = errors
+            components = components, variables = variables, journeys = journeys,
+            examples = scannedExamples, errors = errors
         )
 
-        // TODO collect all errors
         if (errors.isNotEmpty()) {
             throw CollatingException(
                 "Problems encountered while parsing files!\n" + errors.joinToString("\n")
@@ -90,8 +95,9 @@ class GenerateReport : Callable<Int> {
         return Report(
             app = app,
             components = components,
-            examples = examples,
+            journeys = journeys,
             crosscuts = crosscuts,
+            examples = examples,
             variables = variables
         )
     }
@@ -126,21 +132,23 @@ fun mapComponent(component: org.aerial.scan.Component): Component {
 }
 
 fun mapExamples(
-    components: List<Component>,
+    components: List<Component>, journeys: List<Journey>,
     variables: List<Variable>,
     examples: List<org.aerial.scan.Example>,
     errors: MutableList<String>
 ): List<Example> {
-    val variableLookup = reverseLookup(variables)
+    val variableLookup = variablesReverseLookup(variables)
+    val componentLookup = componentsReverseLookup(components)
+    val journeyLookup = journeys.map { item -> item.name }.toSet()
     val grouped = groupExamplesByName(examples = examples)
 
     val result = mutableListOf<Example>()
-
     for (example in grouped) {
         try {
             result.add(
                 mapExample(
-                    componentLookup = components,
+                    componentLookup = componentLookup,
+                    journeys = journeyLookup,
                     variableLookup = variableLookup,
                     name = example.key,
                     examples = example.value
@@ -154,16 +162,13 @@ fun mapExamples(
 }
 
 fun mapExample(
-    componentLookup: List<Component>,
+    componentLookup: Map<String, String>,
+    journeys: Set<String>,
     variableLookup: Map<String, String>,
     name: String,
     examples: List<org.aerial.scan.Example>
 ): Example {
-    val allFeatures = examples.map { example -> example.feature }.toSet().toList()
-    val feature = if (allFeatures.size == 1) allFeatures[0] else
-        throw CollatingException("Multiple features found for example ${name}")
-
-    val component = findComponent(componentLookup, feature)
+    val category = findCategory(componentLookup, journeys, name, examples)
 
     val type = determineType(examples.map { example -> example.type })
 
@@ -179,14 +184,34 @@ fun mapExample(
     val tags = examples.map { example -> example.tags }.flatten().toSet().toList()
 
     return Example(
-        component = component,
-        feature = feature,
+        category = category,
         example = name,
         variables = variables,
         tags = tags,
         type = type,
         locations = locations
     )
+}
+
+fun findCategory(
+    componentLookup: Map<String, String>, journeys: Set<String>,
+    name: String,
+    examples: List<org.aerial.scan.Example>
+): Category {
+    val exampleCategories = examples.map { example -> example.category }.toSet().toList()
+    val category = if (exampleCategories.size == 1) exampleCategories[0] else
+        throw CollatingException("Multiple categories found for example $name!")
+
+    val component = componentLookup[category]
+    if (component != null) {
+        return Category.ComponentCategory(component = component, feature = category)
+    }
+
+    if (journeys.contains(category)) {
+        return Category.JourneyCategory(journey = category)
+    }
+
+    throw CollatingException("Category $category for example $name could not be mapped to either feature or journey!")
 }
 
 fun determineType(types: List<org.aerial.scan.ExampleType>): ExampleType {
@@ -205,7 +230,7 @@ fun determineType(types: List<org.aerial.scan.ExampleType>): ExampleType {
     }
 }
 
-fun reverseLookup(variables: List<Variable>): Map<String, String> {
+fun variablesReverseLookup(variables: List<Variable>): Map<String, String> {
     val map = mutableMapOf<String, String>()
     for (variable in variables) {
         for (value in variable.values) {
@@ -215,26 +240,25 @@ fun reverseLookup(variables: List<Variable>): Map<String, String> {
     return map
 }
 
+fun componentsReverseLookup(components: List<Component>): Map<String, String> {
+    val map = mutableMapOf<String, String>()
+    for (component in components) {
+        for (value in component.features) {
+            map[value] = component.component
+        }
+    }
+    return map
+}
+
 fun groupExamplesByName(examples: List<org.aerial.scan.Example>): Map<String, List<org.aerial.scan.Example>> {
     val result = mutableMapOf<String, MutableList<org.aerial.scan.Example>>()
 
     for (example in examples) {
-//        val file = example.file
-//        if (file == null) {
-//            errors.add("File not found for example ${example.name}")
-//        } else {
         val list = result[example.name] ?: mutableListOf()
         list.add(example)
         result[example.name] = list
-//        }
     }
     return result
-}
-
-fun findComponent(components: List<Component>, feature: String): String {
-    val component = components.find { component -> component.features.contains(feature) }
-    return component?.component
-        ?: throw CollatingException("Failed to find a component corresponding to feature $feature")
 }
 
 fun reconstructVariables(lookup: Map<String, String>, values: Set<String>): Map<String, String> {
@@ -249,16 +273,23 @@ fun reconstructVariables(lookup: Map<String, String>, values: Set<String>): Map<
 
 fun mapCrosscut(crosscut: org.aerial.scan.Crosscut): Crosscut {
     val file =
-        crosscut.file ?: throw CollatingException("File not found for crosscut ${crosscut.name}")
+        crosscut.file ?: throw CollatingException("File not found for crosscut: ${crosscut.name}")
     return Crosscut(
         name = crosscut.name, file = file, line = crosscut.line
     )
+}
 
+fun mapJourney(journey: org.aerial.scan.Journey): Journey {
+    val file =
+        journey.file ?: throw CollatingException("File not found for journey: ${journey.name}")
+    return Journey(
+        name = journey.name, desc = journey.desc, file = file, line = journey.line
+    )
 }
 
 fun mapVariable(variable: org.aerial.scan.Variable): Variable {
     val file =
-        variable.file ?: throw CollatingException("File not found for variable ${variable.name}")
+        variable.file ?: throw CollatingException("File not found for variable: ${variable.name}")
     return Variable(
         name = variable.name, values = variable.values.toList(), file = file, line = variable.line
     )

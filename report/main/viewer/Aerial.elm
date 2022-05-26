@@ -50,7 +50,7 @@ init flags =
                     value
 
                 Err error ->
-                    { app = "", components = [], examples = [], crosscuts = [], variables = [] }
+                    { app = "", components = [], examples = [], crosscuts = [], journeys = [], variables = [] }
 
         model : Model
         model =
@@ -108,7 +108,7 @@ findComponent name components =
 
 examplesForComponent : String -> List Example -> List Example
 examplesForComponent component examples =
-    List.filter (.component >> (==) component) examples
+    List.filter (.category >> matchesComponent component) examples
 
 
 type alias UI =
