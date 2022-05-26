@@ -536,12 +536,12 @@ class ReadFeaturesTest {
     }
 
     @Test
-    fun `Aerial-specific files always scanned`() {
+    fun `Aerial-specific files are always scanned`() {
         assertAll(
             {
                 assertTrue(
                     shouldScanFile(
-                        name = "aerial-1.txt",
+                        name = "1.aerial",
                         scanNonTests = true,
                         scanExtensionless = true
                     )
@@ -550,7 +550,7 @@ class ReadFeaturesTest {
             {
                 assertTrue(
                     shouldScanFile(
-                        name = "aerial-2",
+                        name = "1.aerial",
                         scanNonTests = false,
                         scanExtensionless = false
                     )

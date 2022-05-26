@@ -40,14 +40,14 @@ class ReadFeatures : Callable<Int> {
     @Option(
         names = ["--scan-non-tests"],
         description = [
-            "By default, only test files will be scanned (files with \"test\" in the name, not case-sensitive). Enable this option to scan both test and non-test files. Note: files with \"aerial\" in the name will always be scanned."]
+            "By default, only test files will be scanned (files with \"test\" in the name, not case-sensitive). Enable this option to scan both test and non-test files. Note: files with the \".aerial\" extension will always be scanned."]
     )
     var scanNonTests: Boolean = false
 
     @Option(
         names = ["--scan-extensionless"],
         description = [
-            "By default, only files that have an extension will be scanned. Enable this option to scan both files with and without an extension. Note: files with \"aerial\" in the name will always be scanned."]
+            "By default, only files that have an extension will be scanned. Enable this option to scan both files with and without an extension. Note: files with the \".aerial\" extension will always be scanned."]
     )
     var scanExtensionless: Boolean = false
 
@@ -198,7 +198,7 @@ private fun scanFile(file: File): Content {
 }
 
 fun shouldScanFile(name: String, scanNonTests: Boolean, scanExtensionless: Boolean): Boolean {
-    if (name.contains("aerial")) {
+    if (name.endsWith(".aerial")) {
         return true
     }
     val isScanNonTestsOk = scanNonTests ||
