@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.5.21"
+    kotlin("jvm") version "1.8.21"
 }
 
 group = "org"
@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.google.code.gson:gson:2.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
     implementation("info.picocli:picocli:4.6.3")
     testImplementation(kotlin("test"))
 }
@@ -28,13 +28,13 @@ tasks.withType<KotlinCompile>() {
 sourceSets {
     main {
         java {
-            setSrcDirs(listOf("lib/main", "read/main", "report/main", "cli"))
+            setSrcDirs(listOf("src/scanner/main", "src/cli/main"))
         }
     }
 
     test {
         java {
-            setSrcDirs(listOf("lib/test", "read/test", "report/test"))
+            setSrcDirs(listOf("src/scanner/test"))
         }
     }
 }

@@ -1,0 +1,12 @@
+aerial:scenario The warehouse notifies the main site when items go out of stock.
+feature: Out of stock
+tags: back-office
+
+aerial:scenario Customer can identify which items are out of stock while shopping.
+feature: Out of stock * Catalogue
+
+aerial:scenario Out-of-stock items are removed from cart on checkout.
+feature: Out of stock * Checkout > Shopping cart
+
+aerial:scenario Customer is notified when the product is back in stock, if they have requested it.
+feature: Out of stock * Notifications

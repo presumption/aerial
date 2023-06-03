@@ -1,11 +1,7 @@
 package org.aerial.scan
 
-data class Domain(
-    var name: String?,
-)
-
 data class Feature(
-    val name: String,
+    val name: List<String>,
     val loc: Loc?
 )
 
@@ -14,11 +10,11 @@ data class Scenario(
     val loc: Loc?
 )
 
-data class Example(
-    var name: String?,
-    val tags: Set<String>,
-    var loc: Loc?
-)
+//data class Example(
+//    var name: String?,
+//    val tags: Set<String>,
+//    var loc: Loc?
+//)
 
 data class Loc(
     val file: String,

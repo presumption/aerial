@@ -1,0 +1,12 @@
+aerial:scenario Customer can search the product catalogue for the type of product they want to buy.
+feature: Catalogue > Search
+
+aerial:scenario Customer can view the full description of a product they are interested in.
+feature: Catalogue > Product details
+
+aerial:scenario Customer can view photos of a product they are interested in.
+feature: Catalogue > Product photos
+
+aerial:scenario Support engineer can correct an error in product description.
+feature: Catalogue > Product details
+tags: back-office
