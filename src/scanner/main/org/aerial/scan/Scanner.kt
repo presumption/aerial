@@ -1,11 +1,8 @@
 package org.aerial.scan
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
 import picocli.CommandLine.*
 import java.io.File
-import java.io.InputStream
 
 
 @Command(
@@ -28,22 +25,37 @@ class Scanner : Runnable {
             throw IllegalArgumentException("No paths to scan! See help for required arguments.")
         }
 
-        scanFiles(Options(false), paths.map { path -> File(path) }.toTypedArray())
+        val result = scanFiles(Options(false), paths.map { path -> File(path) }.toTypedArray())
+        if (result.errors.isNotEmpty()) {
+            throw Error("Problems encountered while parsing files!\n" + result.errors.joinToString("\n"))
+        }
+
+        val systemFile = "system.json"
+        val featuresFile = "features.json"
+
+        File(output).mkdirs()
+        File(output).resolve(systemFile).writeText(toSystemFile(result))
     }
 }
 
 fun scanFiles(options: Options, files: Array<File>): Result {
-    return Result()
+    val result = Result()
+    for (file in files) {
+        val result1 = scanFile(options, file)
+        result.combine(result1)
+    }
+    return result
 }
 
 fun scanFile(options: Options, file: File): Result {
-    if (file.isDirectory) {
-        return scanFiles(options, file.listFiles() ?: emptyArray())
+    return if (file.isDirectory) {
+        scanFiles(options, file.listFiles() ?: emptyArray())
 
     } else if (file.name == "aerial.json") {
-        return readConfig(file.inputStream())
+        readConfig(file.inputStream())
+
     } else {
-        return scan(file.readLines())
+        scan(file.readLines())
     }
 }
 
@@ -53,10 +65,6 @@ fun scan(content: List<String>): Result {
 
 data class Options(
     val readGitignore: Boolean
-)
-
-data class Result(
-    var system: String? = null
 )
 
 //private fun scanFiles(

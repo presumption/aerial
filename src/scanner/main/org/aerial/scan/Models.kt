@@ -9,7 +9,7 @@ data class Scenario(
     val name: String,
     val loc: Loc?
 )
-
+    
 //data class Example(
 //    var name: String?,
 //    val tags: Set<String>,
